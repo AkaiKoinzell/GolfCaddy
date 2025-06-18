@@ -131,6 +131,17 @@ function clearInputs() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  populateCourseOptions();
+  // Popola datalist
+  const courseList = document.getElementById("course-list");
+  Object.keys(courses).forEach(courseName => {
+    const option = document.createElement("option");
+    option.value = courseName;
+    courseList.appendChild(option);
+  });
+
+  // Quando cambio input del campo, aggiorno layout
   document.getElementById("course").addEventListener("input", updateLayoutOptions);
+
+  // Se c'è un valore iniziale selezionato nel campo (da autocomplete), aggiorna i layout
+  updateLayoutOptions();
 });
