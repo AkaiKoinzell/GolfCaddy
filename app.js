@@ -26,14 +26,18 @@ const roundData = [];
 window.startRound = function () {
   const holesSelect = document.getElementById("holes");
   const course = document.getElementById("course").value;
+  const layout = document.getElementById("layout")?.value || "";
   const player = document.getElementById("player").value;
+
   if (!course || !player) {
     alert("Inserisci il tuo nome e seleziona un campo per iniziare il round.");
     return;
   }
+
   totalHoles = parseInt(holesSelect.value);
   currentHole = 1;
   roundData.length = 0;
+
   document.getElementById("start-round").style.display = "none";
   document.getElementById("hole-input").style.display = "block";
   updateHoleNumber();
@@ -60,6 +64,7 @@ window.saveHole = async function () {
       await addDoc(collection(db, "golf_rounds"), {
         timestamp: new Date().toISOString(),
         course: document.getElementById("course").value,
+        layout: document.getElementById("layout")?.value || "",
         player: document.getElementById("player").value,
         notes: document.getElementById("notes").value,
         holes: roundData
@@ -82,25 +87,3 @@ function clearInputs() {
   });
   document.getElementById("fairway").value = "na";
 }
-
-// Carica i round esistenti nella tabella
-window.addEventListener("DOMContentLoaded", async () => {
-  const snapshot = await getDocs(collection(db, "golf_rounds"));
-  const tbody = document.querySelector("#rounds-table tbody");
-  tbody.innerHTML = "";
-
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    const totalScore = data.holes.reduce((sum, h) => sum + h.score, 0);
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-  <td>${new Date(data.timestamp).toLocaleDateString()}</td>
-  <td>${data.course}</td>
-  <td>${data.player}</td>
-  <td>${totalScore}</td>
-  <td><a href="round.html?id=${doc.id}">Dettagli</a></td>
-`;
-    tbody.appendChild(row);
-  });
-});
