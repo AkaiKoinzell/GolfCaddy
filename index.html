@@ -1,138 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Golf Tracker</title>
-  <link rel="icon" href="https://www.svgrepo.com/show/264687/golf.svg" type="image/svg+xml" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aggiungi Round - Golf Tracker</title>
   <style>
     body {
       font-family: sans-serif;
       margin: 0;
-      padding: 0;
-      background: #f0f0f0;
-      color: #333;
-    }
-    header, main {
       padding: 1rem;
+      background: #f5f5f5;
     }
     header {
-      background: #006400;
+      background-color: #006400;
       color: white;
+      padding: 1rem;
+      text-align: center;
     }
-    h1 {
-      margin: 0;
-    }
-    section {
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      background: #e0e0e0;
+      padding: 0.5rem;
       margin-bottom: 2rem;
+    }
+    nav a {
+      text-decoration: none;
+      color: #006400;
+      font-weight: bold;
+    }
+    h2 {
+      color: #006400;
+      margin-top: 1rem;
+    }
+    form, .round-inputs, table {
+      max-width: 600px;
+      margin: 0 auto;
     }
     label {
       display: block;
-      margin-top: 1rem;
+      margin-top: 0.5rem;
     }
-    input, select, button, textarea {
+    input, select, button {
       width: 100%;
       padding: 0.5rem;
-      margin-top: 0.3rem;
+      margin-top: 0.2rem;
       box-sizing: border-box;
     }
-    button {
-      background: #006400;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-top: 1rem;
-    }
-    button:hover {
-      background: #228B22;
+    #hole-input {
+      display: none;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1rem;
+      margin-top: 2rem;
     }
     th, td {
       border: 1px solid #ccc;
       padding: 0.5rem;
-      text-align: left;
-    }
-    th {
-      background: #e0e0e0;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Golf Tracker</h1>
+    <h1>Aggiungi Nuovo Round</h1>
   </header>
-  <main>
-    <section id="start-round">
-      <h2>Nuovo Round</h2>
-      <label for="player">Nome Giocatore</label>
-      <input type="text" id="player" placeholder="Il tuo nome" />
+  <nav>
+    <a href="home.html">Home</a>
+    <a href="index.html">Aggiungi Round</a>
+    <a href="stats.html">Statistiche</a>
+    <a href="profile.html">Profilo</a>
+  </nav>
 
-      <label for="course">Campo</label>
-      <select id="course">
-        <option value="">-- Seleziona un campo --</option>
-        <option value="roma_club">Roma Golf Club</option>
-        <option value="paradise_golf">Paradise Golf Resort</option>
-      </select>
+  <form id="start-round">
+    <label for="player">Il tuo nome:</label>
+    <input type="text" id="player" />
 
-      <label for="holes">Numero buche</label>
-      <select id="holes">
-        <option value="9">9 buche</option>
-        <option value="18">18 buche</option>
-      </select>
+    <label for="course">Nome del campo:</label>
+    <input type="text" id="course" />
 
-      <label for="notes">Note generali sul round</label>
-      <textarea id="notes" rows="3" placeholder="Es. Giornata ventosa, campo in buone condizioni..."></textarea>
+    <label for="holes">Numero di buche:</label>
+    <select id="holes">
+      <option value="9">9</option>
+      <option value="18">18</option>
+    </select>
 
-      <button onclick="startRound()">Inizia Round</button>
-    </section>
+    <label for="notes">Note (opzionale):</label>
+    <input type="text" id="notes" />
 
-    <section id="hole-input" style="display:none;">
-      <h2>Inserisci Dati Buca <span id="hole-number">1</span></h2>
-      <label for="par">Par</label>
-      <input type="number" id="par" min="3" max="5" />
+    <button type="button" onclick="startRound()">Inizia Round</button>
+  </form>
 
-      <label for="distance">Distanza (metri)</label>
-      <input type="number" id="distance" />
+  <div id="hole-input">
+    <h2>Buca <span id="hole-number">1</span></h2>
+    <label for="par">Par:</label>
+    <input type="number" id="par" />
 
-      <label for="score">Colpi</label>
-      <input type="number" id="score" />
+    <label for="distance">Distanza (metri):</label>
+    <input type="number" id="distance" />
 
-      <label for="putts">Putt</label>
-      <input type="number" id="putts" />
+    <label for="score">Colpi effettuati:</label>
+    <input type="number" id="score" />
 
-      <label for="fairway">Fairway colpito</label>
-      <select id="fairway">
-        <option value="na">N/A</option>
-        <option value="yes">Sì</option>
-        <option value="no">No</option>
-      </select>
+    <label for="putts">Numero di putt:</label>
+    <input type="number" id="putts" />
 
-      <label for="penalties">Penalità</label>
-      <input type="number" id="penalties" min="0" />
+    <label for="fairway">Fairway colpito:</label>
+    <select id="fairway">
+      <option value="na">N/A</option>
+      <option value="yes">Sì</option>
+      <option value="no">No</option>
+    </select>
 
-      <button onclick="saveHole()">Salva e vai alla prossima</button>
-    </section>
+    <label for="penalties">Penalità:</label>
+    <input type="number" id="penalties" />
 
-    <section id="rounds-list">
-      <h2>Round Salvati</h2>
-      <table id="rounds-table">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Campo</th>
-            <th>Giocatore</th>
-            <th>Colpi Totali</th>
-            <th>Azioni</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-  </main>
+    <button type="button" onclick="saveHole()">Salva Buca</button>
+  </div>
+
+  <table id="rounds-table">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Campo</th>
+        <th>Giocatore</th>
+        <th>Punteggio</th>
+        <th>Dettagli</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script type="module" src="app.js"></script>
 </body>
