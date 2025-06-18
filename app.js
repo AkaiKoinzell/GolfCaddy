@@ -1,6 +1,10 @@
-// Firebase SDK imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
@@ -78,3 +82,25 @@ function clearInputs() {
   });
   document.getElementById("fairway").value = "na";
 }
+
+// Carica i round esistenti nella tabella
+window.addEventListener("DOMContentLoaded", async () => {
+  const snapshot = await getDocs(collection(db, "golf_rounds"));
+  const tbody = document.querySelector("#rounds-table tbody");
+  tbody.innerHTML = "";
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const totalScore = data.holes.reduce((sum, h) => sum + h.score, 0);
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${new Date(data.timestamp).toLocaleDateString()}</td>
+      <td>${data.course}</td>
+      <td>${data.player}</td>
+      <td>${totalScore}</td>
+      <td><button onclick='alert("Campo: ${data.course}\\nGiocatore: ${data.player}\\nColpi totali: ${totalScore}")'>Dettagli</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+});
