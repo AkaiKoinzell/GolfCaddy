@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aggiungi Round - Golf Tracker</title>
   <style>
     body {
@@ -29,6 +29,10 @@
       text-decoration: none;
       color: #006400;
       font-weight: bold;
+    }
+    h2 {
+      color: #006400;
+      margin-top: 1rem;
     }
     form, .round-inputs {
       max-width: 600px;
@@ -65,10 +69,10 @@
     <input type="text" id="player" />
 
     <label for="course">Nome del campo (scrivi per cercare):</label>
-    <input list="course-list" id="course" name="course" />
-    <datalist id="course-list"></datalist>
+    <input type="text" id="course" list="course-options" />
+    <datalist id="course-options"></datalist>
 
-    <label for="layout">Layout del percorso (es. Yellow, White):</label>
+    <label for="layout">Tee / Percorso:</label>
     <select id="layout"></select>
 
     <label for="holes">Numero di buche:</label>
@@ -76,6 +80,11 @@
       <option value="9">9</option>
       <option value="18">18</option>
     </select>
+
+    <div id="combo-9-select" style="display:none;">
+      <label for="combo9">Seleziona combinazione 9 buche:</label>
+      <select id="combo9"></select>
+    </div>
 
     <label for="notes">Note (opzionale):</label>
     <input type="text" id="notes" />
