@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Statistiche Personali</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistiche - Golf Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -31,16 +31,27 @@
       color: #006400;
       font-weight: bold;
     }
-    h1 {
+    h2 {
       color: #006400;
     }
-    canvas {
-      max-width: 600px;
+    .chart-container {
+      max-width: 700px;
       margin: 2rem auto;
-      display: block;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .stat {
-      margin-bottom: 1rem;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: center;
     }
   </style>
 </head>
@@ -51,30 +62,42 @@
   <nav>
     <a href="home.html">Home</a>
     <a href="index.html">Aggiungi Round</a>
+    <a href="stats.html">Statistiche</a>
     <a href="profile.html">Profilo</a>
   </nav>
 
-  <div class="stat">
-    <strong>Numero totale di round giocati:</strong> <span id="total-rounds">0</span>
+  <div class="chart-container">
+    <h2>Andamento Punteggi</h2>
+    <canvas id="scoreChart"></canvas>
   </div>
-  <div class="stat">
-    <strong>Media colpi per round:</strong> <span id="avg-score">-</span>
+
+  <div class="chart-container">
+    <h2>Percentuale Putt sui Colpi Totali</h2>
+    <canvas id="puttChart"></canvas>
   </div>
-  <div class="stat">
-    <strong>Media colpi per Par:</strong><br>
-    Par 3: <span id="avg-par3">-</span><br>
-    Par 4: <span id="avg-par4">-</span><br>
-    Par 5: <span id="avg-par5">-</span>
+
+  <div class="chart-container">
+    <h2>Storico Round</h2>
+    <table id="rounds-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Campo</th>
+          <th>Punteggio</th>
+          <th>Dettagli</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
-  <div class="stat">
-    <strong>Percentuale media di putt:</strong> <span id="avg-putts">-</span>%
-  </div>
-  <canvas id="fairwayChart"></canvas>
-  <canvas id="scoreTrend"></canvas>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
@@ -91,87 +114,66 @@
 
     async function loadStats() {
       const snapshot = await getDocs(collection(db, "golf_rounds"));
-      const rounds = snapshot.docs.map(doc => doc.data());
+      const rounds = [];
+      const tbody = document.querySelector("#rounds-table tbody");
+      tbody.innerHTML = "";
 
-      document.getElementById("total-rounds").textContent = rounds.length;
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const totalScore = data.holes.reduce((s, h) => s + h.score, 0);
+        const totalPutts = data.holes.reduce((s, h) => s + h.putts, 0);
 
-      let totalScores = 0;
-      let totalPutt = 0;
-      let totalHoles = 0;
-      let par3 = [], par4 = [], par5 = [];
-      let fairwayHit = 0;
-      let fairwayTotal = 0;
-      let trendLabels = [], trendScores = [];
-
-      rounds.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-      rounds.forEach(round => {
-        let roundScore = 0;
-        let roundPutts = 0;
-
-        round.holes.forEach(hole => {
-          roundScore += hole.score;
-          roundPutts += hole.putts;
-          totalPutt += hole.putts;
-          totalHoles++;
-
-          if (hole.par == 3) par3.push(hole.score);
-          if (hole.par == 4) par4.push(hole.score);
-          if (hole.par == 5) par5.push(hole.score);
-
-          if (hole.fairway !== "na") fairwayTotal++;
-          if (hole.fairway === "yes") fairwayHit++;
+        rounds.push({
+          date: new Date(data.timestamp),
+          score: totalScore,
+          putts: totalPutts,
+          totalStrokes: totalScore,
+          course: data.course,
+          id: doc.id
         });
 
-        totalScores += roundScore;
-        trendLabels.push(new Date(round.timestamp).toLocaleDateString());
-        trendScores.push(roundScore);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${new Date(data.timestamp).toLocaleDateString()}</td>
+          <td>${data.course}</td>
+          <td>${totalScore}</td>
+          <td><a href="round.html?id=${doc.id}">Dettagli</a></td>
+        `;
+        tbody.appendChild(tr);
       });
 
-      const avg = (arr) => arr.length ? (arr.reduce((a, b) => a + b) / arr.length).toFixed(2) : "-";
-      const avgScore = rounds.length ? (totalScores / rounds.length).toFixed(2) : "-";
-      const avgPutts = totalScores ? ((totalPutt / totalScores) * 100).toFixed(1) : "-";
+      if (rounds.length > 0) {
+        renderCharts(rounds);
+      }
+    }
 
-      document.getElementById("avg-score").textContent = avgScore;
-      document.getElementById("avg-putts").textContent = avgPutts;
-      document.getElementById("avg-par3").textContent = avg(par3);
-      document.getElementById("avg-par4").textContent = avg(par4);
-      document.getElementById("avg-par5").textContent = avg(par5);
+    function renderCharts(rounds) {
+      const labels = rounds.map(r => r.date.toLocaleDateString());
+      const scores = rounds.map(r => r.score);
+      const puttPercent = rounds.map(r => ((r.putts / r.totalStrokes) * 100).toFixed(1));
 
-      const fairwayMissed = fairwayTotal - fairwayHit;
-      const ctxPie = document.getElementById("fairwayChart").getContext("2d");
-      new Chart(ctxPie, {
-        type: 'pie',
+      new Chart(document.getElementById("scoreChart"), {
+        type: "line",
         data: {
-          labels: ['Fairway Hit', 'Missed'],
+          labels: labels,
           datasets: [{
-            label: 'Fairway Accuracy',
-            data: [fairwayHit, fairwayMissed],
-            backgroundColor: ["#2e8b57", "#ff6347"]
+            label: "Punteggio",
+            data: scores,
+            borderColor: "#006400",
+            fill: false
           }]
         }
       });
 
-      const ctxLine = document.getElementById("scoreTrend").getContext("2d");
-      new Chart(ctxLine, {
-        type: 'line',
+      new Chart(document.getElementById("puttChart"), {
+        type: "bar",
         data: {
-          labels: trendLabels,
+          labels: labels,
           datasets: [{
-            label: 'Score per Round',
-            data: trendScores,
-            fill: false,
-            borderColor: '#006400',
-            tension: 0.1
+            label: "% Putt",
+            data: puttPercent,
+            backgroundColor: "#32CD32"
           }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: false
-            }
-          }
         }
       });
     }
