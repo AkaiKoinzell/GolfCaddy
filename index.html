@@ -46,6 +46,19 @@
     button:hover {
       background: #228B22;
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background: #e0e0e0;
+    }
   </style>
 </head>
 <body>
@@ -102,6 +115,22 @@
       <input type="number" id="penalties" min="0" />
 
       <button onclick="saveHole()">Salva e vai alla prossima</button>
+    </section>
+
+    <section id="rounds-list">
+      <h2>Round Salvati</h2>
+      <table id="rounds-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Campo</th>
+            <th>Giocatore</th>
+            <th>Colpi Totali</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </section>
   </main>
 
