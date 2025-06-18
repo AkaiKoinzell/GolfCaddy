@@ -22,16 +22,17 @@ const db = getFirestore(app);
 
 let currentHole = 1;
 let totalHoles = 9;
+let selectedHoleNumbers = [];
 const roundData = [];
 
 window.populateCourseOptions = function () {
-  const courseSelect = document.getElementById("course");
-  courseSelect.innerHTML = "";
+  const courseInput = document.getElementById("course");
+  const datalist = document.getElementById("course-options");
+  datalist.innerHTML = "";
   Object.keys(courses).forEach(courseName => {
     const option = document.createElement("option");
     option.value = courseName;
-    option.textContent = courseName;
-    courseSelect.appendChild(option);
+    datalist.appendChild(option);
   });
 };
 
@@ -49,36 +50,34 @@ window.updateLayoutOptions = function () {
       layoutSelect.appendChild(option);
     });
   }
-
-  updateCombo9Options();
 };
 
-function updateCombo9Options() {
-  const holesSelect = document.getElementById("holes");
-  const combo9Div = document.getElementById("combo9-options");
-  const combo9Select = document.getElementById("combo9");
+window.updateComboOptions = function () {
   const course = document.getElementById("course").value;
+  const comboDiv = document.getElementById("combo-9-select");
+  const comboSelect = document.getElementById("combo9");
+  comboSelect.innerHTML = "";
 
-  combo9Select.innerHTML = "";
-
-  if (holesSelect.value === "9" && courses[course]?.combos) {
-    combo9Div.style.display = "block";
-    courses[course].combos.forEach(combo => {
+  if (courses[course]?.combinations9) {
+    comboDiv.style.display = "block";
+    Object.keys(courses[course].combinations9).forEach(combo => {
       const option = document.createElement("option");
-      option.value = combo.join(",");
-      option.textContent = combo.join(" + ");
-      combo9Select.appendChild(option);
+      option.value = combo;
+      option.textContent = combo;
+      comboSelect.appendChild(option);
     });
   } else {
-    combo9Div.style.display = "none";
+    comboDiv.style.display = "none";
   }
-}
+};
 
 window.startRound = function () {
   const holesSelect = document.getElementById("holes");
   const course = document.getElementById("course").value;
   const layout = document.getElementById("layout").value;
   const player = document.getElementById("player").value;
+  const notes = document.getElementById("notes").value;
+  const is9 = holesSelect.value === "9";
 
   if (!course || !player || !layout) {
     alert("Inserisci il tuo nome, seleziona un campo e un layout per iniziare il round.");
@@ -89,6 +88,13 @@ window.startRound = function () {
   currentHole = 1;
   roundData.length = 0;
 
+  if (is9 && courses[course]?.combinations9) {
+    const comboName = document.getElementById("combo9").value;
+    selectedHoleNumbers = courses[course].combinations9[comboName];
+  } else {
+    selectedHoleNumbers = Array.from({ length: totalHoles }, (_, i) => i + 1);
+  }
+
   document.getElementById("start-round").style.display = "none";
   document.getElementById("hole-input").style.display = "block";
   updateHoleNumber();
@@ -96,16 +102,17 @@ window.startRound = function () {
 };
 
 function updateHoleNumber() {
-  document.getElementById("hole-number").textContent = currentHole;
+  document.getElementById("hole-number").textContent = selectedHoleNumbers[currentHole - 1];
 }
 
 function autoFillHoleData() {
   const course = document.getElementById("course").value;
   const tee = document.getElementById("layout").value;
   const courseData = courses[course]?.tees[tee];
+  const holeIndex = selectedHoleNumbers[currentHole - 1] - 1;
 
-  if (courseData && courseData.holes.length >= currentHole) {
-    const hole = courseData.holes[currentHole - 1];
+  if (courseData && courseData.holes.length > holeIndex) {
+    const hole = courseData.holes[holeIndex];
     document.getElementById("par").value = hole.par;
     document.getElementById("distance").value = hole.distance;
   }
@@ -113,7 +120,7 @@ function autoFillHoleData() {
 
 window.saveHole = async function () {
   const hole = {
-    number: currentHole,
+    number: selectedHoleNumbers[currentHole - 1],
     par: parseInt(document.getElementById("par").value),
     distance: parseInt(document.getElementById("distance").value),
     score: parseInt(document.getElementById("score").value),
@@ -129,7 +136,6 @@ window.saveHole = async function () {
         timestamp: new Date().toISOString(),
         course: document.getElementById("course").value,
         layout: document.getElementById("layout")?.value || "",
-        combo9: document.getElementById("combo9")?.value || "",
         player: document.getElementById("player").value,
         notes: document.getElementById("notes").value,
         holes: roundData
@@ -156,6 +162,9 @@ function clearInputs() {
 
 window.addEventListener("DOMContentLoaded", () => {
   populateCourseOptions();
-  document.getElementById("course").addEventListener("input", updateLayoutOptions);
-  document.getElementById("holes").addEventListener("change", updateCombo9Options);
+  document.getElementById("course").addEventListener("input", () => {
+    updateLayoutOptions();
+    updateComboOptions();
+  });
+  document.getElementById("holes").addEventListener("change", updateComboOptions);
 });
