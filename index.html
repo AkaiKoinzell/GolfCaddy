@@ -20,6 +20,7 @@
     nav {
       display: flex;
       justify-content: center;
+      flex-wrap: wrap;
       gap: 1rem;
       background: #e0e0e0;
       padding: 0.5rem;
@@ -33,10 +34,15 @@
     h2 {
       color: #006400;
       margin-top: 1rem;
+      text-align: center;
     }
-    form, .round-inputs, table {
+    form, .round-inputs {
       max-width: 600px;
       margin: 0 auto;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     label {
       display: block;
@@ -47,19 +53,27 @@
       padding: 0.5rem;
       margin-top: 0.2rem;
       box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
     #hole-input {
       display: none;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 2rem;
+    button {
+      background-color: #006400;
+      color: white;
+      border: none;
+      margin-top: 1rem;
+      cursor: pointer;
     }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: center;
+    button:hover {
+      background-color: #004d00;
+    }
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+        align-items: center;
+      }
     }
   </style>
 </head>
@@ -93,7 +107,7 @@
     <button type="button" onclick="startRound()">Inizia Round</button>
   </form>
 
-  <div id="hole-input">
+  <div id="hole-input" class="round-inputs">
     <h2>Buca <span id="hole-number">1</span></h2>
     <label for="par">Par:</label>
     <input type="number" id="par" />
@@ -119,19 +133,6 @@
 
     <button type="button" onclick="saveHole()">Salva Buca</button>
   </div>
-
-  <table id="rounds-table">
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Campo</th>
-        <th>Giocatore</th>
-        <th>Punteggio</th>
-        <th>Dettagli</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 
   <script type="module" src="app.js"></script>
 </body>
