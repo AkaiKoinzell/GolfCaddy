@@ -39,7 +39,11 @@
     Par 4: <span id="avg-par4">-</span><br>
     Par 5: <span id="avg-par5">-</span>
   </div>
+  <div class="stat">
+    <strong>Percentuale media di putt:</strong> <span id="avg-putts">-</span>%
+  </div>
   <canvas id="fairwayChart"></canvas>
+  <canvas id="scoreTrend"></canvas>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -65,15 +69,23 @@
       document.getElementById("total-rounds").textContent = rounds.length;
 
       let totalScores = 0;
+      let totalPutt = 0;
       let totalHoles = 0;
       let par3 = [], par4 = [], par5 = [];
       let fairwayHit = 0;
       let fairwayTotal = 0;
+      let trendLabels = [], trendScores = [];
+
+      rounds.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
       rounds.forEach(round => {
         let roundScore = 0;
+        let roundPutts = 0;
+
         round.holes.forEach(hole => {
           roundScore += hole.score;
+          roundPutts += hole.putts;
+          totalPutt += hole.putts;
           totalHoles++;
 
           if (hole.par == 3) par3.push(hole.score);
@@ -83,19 +95,25 @@
           if (hole.fairway !== "na") fairwayTotal++;
           if (hole.fairway === "yes") fairwayHit++;
         });
+
         totalScores += roundScore;
+        trendLabels.push(new Date(round.timestamp).toLocaleDateString());
+        trendScores.push(roundScore);
       });
 
       const avg = (arr) => arr.length ? (arr.reduce((a, b) => a + b) / arr.length).toFixed(2) : "-";
+      const avgScore = rounds.length ? (totalScores / rounds.length).toFixed(2) : "-";
+      const avgPutts = totalScores ? ((totalPutt / totalScores) * 100).toFixed(1) : "-";
 
-      document.getElementById("avg-score").textContent = rounds.length ? (totalScores / rounds.length).toFixed(2) : "-";
+      document.getElementById("avg-score").textContent = avgScore;
+      document.getElementById("avg-putts").textContent = avgPutts;
       document.getElementById("avg-par3").textContent = avg(par3);
       document.getElementById("avg-par4").textContent = avg(par4);
       document.getElementById("avg-par5").textContent = avg(par5);
 
       const fairwayMissed = fairwayTotal - fairwayHit;
-      const ctx = document.getElementById("fairwayChart").getContext("2d");
-      new Chart(ctx, {
+      const ctxPie = document.getElementById("fairwayChart").getContext("2d");
+      new Chart(ctxPie, {
         type: 'pie',
         data: {
           labels: ['Fairway Hit', 'Missed'],
@@ -104,6 +122,29 @@
             data: [fairwayHit, fairwayMissed],
             backgroundColor: ["#2e8b57", "#ff6347"]
           }]
+        }
+      });
+
+      const ctxLine = document.getElementById("scoreTrend").getContext("2d");
+      new Chart(ctxLine, {
+        type: 'line',
+        data: {
+          labels: trendLabels,
+          datasets: [{
+            label: 'Score per Round',
+            data: trendScores,
+            fill: false,
+            borderColor: '#006400',
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: false
+            }
+          }
         }
       });
     }
