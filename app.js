@@ -95,12 +95,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-      <td>${new Date(data.timestamp).toLocaleDateString()}</td>
-      <td>${data.course}</td>
-      <td>${data.player}</td>
-      <td>${totalScore}</td>
-      <td><button onclick='alert("Campo: ${data.course}\\nGiocatore: ${data.player}\\nColpi totali: ${totalScore}")'>Dettagli</button></td>
-    `;
+  <td>${new Date(data.timestamp).toLocaleDateString()}</td>
+  <td>${data.course}</td>
+  <td>${data.player}</td>
+  <td>${totalScore}</td>
+  <td><a href="round.html?id=${doc.id}">Dettagli</a></td>
+`;
     tbody.appendChild(row);
   });
 });
