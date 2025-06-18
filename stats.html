@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Statistiche Personali</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #006400;
+    }
+    canvas {
+      max-width: 600px;
+      margin: 2rem auto;
+      display: block;
+    }
+    .stat {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Statistiche Personali</h1>
+  <div class="stat">
+    <strong>Numero totale di round giocati:</strong> <span id="total-rounds">0</span>
+  </div>
+  <div class="stat">
+    <strong>Media colpi per round:</strong> <span id="avg-score">-</span>
+  </div>
+  <div class="stat">
+    <strong>Media colpi per Par:</strong><br>
+    Par 3: <span id="avg-par3">-</span><br>
+    Par 4: <span id="avg-par4">-</span><br>
+    Par 5: <span id="avg-par5">-</span>
+  </div>
+  <canvas id="fairwayChart"></canvas>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
+      authDomain: "golfcaddy-ec421.firebaseapp.com",
+      projectId: "golfcaddy-ec421",
+      storageBucket: "golfcaddy-ec421.firebasestorage.app",
+      messagingSenderId: "497160592489",
+      appId: "1:497160592489:web:548701ab6d395e579456f8",
+      measurementId: "G-XGBVHR0BD5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadStats() {
+      const snapshot = await getDocs(collection(db, "golf_rounds"));
+      const rounds = snapshot.docs.map(doc => doc.data());
+
+      document.getElementById("total-rounds").textContent = rounds.length;
+
+      let totalScores = 0;
+      let totalHoles = 0;
+      let par3 = [], par4 = [], par5 = [];
+      let fairwayHit = 0;
+      let fairwayTotal = 0;
+
+      rounds.forEach(round => {
+        let roundScore = 0;
+        round.holes.forEach(hole => {
+          roundScore += hole.score;
+          totalHoles++;
+
+          if (hole.par == 3) par3.push(hole.score);
+          if (hole.par == 4) par4.push(hole.score);
+          if (hole.par == 5) par5.push(hole.score);
+
+          if (hole.fairway !== "na") fairwayTotal++;
+          if (hole.fairway === "yes") fairwayHit++;
+        });
+        totalScores += roundScore;
+      });
+
+      const avg = (arr) => arr.length ? (arr.reduce((a, b) => a + b) / arr.length).toFixed(2) : "-";
+
+      document.getElementById("avg-score").textContent = rounds.length ? (totalScores / rounds.length).toFixed(2) : "-";
+      document.getElementById("avg-par3").textContent = avg(par3);
+      document.getElementById("avg-par4").textContent = avg(par4);
+      document.getElementById("avg-par5").textContent = avg(par5);
+
+      const fairwayMissed = fairwayTotal - fairwayHit;
+      const ctx = document.getElementById("fairwayChart").getContext("2d");
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Fairway Hit', 'Missed'],
+          datasets: [{
+            label: 'Fairway Accuracy',
+            data: [fairwayHit, fairwayMissed],
+            backgroundColor: ["#2e8b57", "#ff6347"]
+          }]
+        }
+      });
+    }
+
+    loadStats();
+  </script>
+</body>
+</html>
