@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Aggiungi Round - Golf Tracker</title>
   <style>
     body {
@@ -20,7 +20,6 @@
     nav {
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
       gap: 1rem;
       background: #e0e0e0;
       padding: 0.5rem;
@@ -31,18 +30,9 @@
       color: #006400;
       font-weight: bold;
     }
-    h2 {
-      color: #006400;
-      margin-top: 1rem;
-      text-align: center;
-    }
     form, .round-inputs {
       max-width: 600px;
       margin: 0 auto;
-      background: white;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     label {
       display: block;
@@ -53,30 +43,9 @@
       padding: 0.5rem;
       margin-top: 0.2rem;
       box-sizing: border-box;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    #layout {
-      display: none;
     }
     #hole-input {
       display: none;
-    }
-    button {
-      background-color: #006400;
-      color: white;
-      border: none;
-      margin-top: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #004d00;
-    }
-    @media (max-width: 600px) {
-      nav {
-        flex-direction: column;
-        align-items: center;
-      }
     }
   </style>
 </head>
@@ -95,8 +64,12 @@
     <label for="player">Il tuo nome:</label>
     <input type="text" id="player" />
 
-    <label for="course">Nome del campo:</label>
-    <input type="text" id="course" />
+    <label for="course">Nome del campo (scrivi per cercare):</label>
+    <input list="course-list" id="course" name="course" />
+    <datalist id="course-list"></datalist>
+
+    <label for="layout">Layout del percorso (es. Yellow, White):</label>
+    <select id="layout"></select>
 
     <label for="holes">Numero di buche:</label>
     <select id="holes">
@@ -104,16 +77,13 @@
       <option value="18">18</option>
     </select>
 
-    <label for="layout" id="layout-label" style="display:none;">Percorso:</label>
-    <select id="layout" style="display:none;"></select>
-
     <label for="notes">Note (opzionale):</label>
     <input type="text" id="notes" />
 
     <button type="button" onclick="startRound()">Inizia Round</button>
   </form>
 
-  <div id="hole-input" class="round-inputs">
+  <div id="hole-input">
     <h2>Buca <span id="hole-number">1</span></h2>
     <label for="par">Par:</label>
     <input type="number" id="par" />
