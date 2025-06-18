@@ -69,7 +69,7 @@
     <input type="text" id="player" />
 
     <label for="course">Nome del campo (scrivi per cercare):</label>
-    <input type="text" id="course" list="course-options" />
+    <input type="text" id="course" list="course-options" oninput="filterCourseOptions()" />
     <datalist id="course-options"></datalist>
 
     <label for="layout">Tee / Percorso:</label>
