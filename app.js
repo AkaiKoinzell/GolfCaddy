@@ -24,13 +24,41 @@ let currentHole = 1;
 let totalHoles = 9;
 const roundData = [];
 
+window.populateCourseOptions = function () {
+  const courseSelect = document.getElementById("course");
+  courseSelect.innerHTML = "";
+  Object.keys(courses).forEach(courseName => {
+    const option = document.createElement("option");
+    option.value = courseName;
+    option.textContent = courseName;
+    courseSelect.appendChild(option);
+  });
+};
+
+window.updateLayoutOptions = function () {
+  const course = document.getElementById("course").value;
+  const layoutSelect = document.getElementById("layout");
+  layoutSelect.innerHTML = "";
+
+  if (courses[course]) {
+    const teeNames = Object.keys(courses[course].tees);
+    teeNames.forEach(tee => {
+      const option = document.createElement("option");
+      option.value = tee;
+      option.textContent = tee;
+      layoutSelect.appendChild(option);
+    });
+  }
+};
+
 window.startRound = function () {
   const holesSelect = document.getElementById("holes");
   const course = document.getElementById("course").value;
+  const layout = document.getElementById("layout").value;
   const player = document.getElementById("player").value;
 
-  if (!course || !player) {
-    alert("Inserisci il tuo nome e seleziona un campo per iniziare il round.");
+  if (!course || !player || !layout) {
+    alert("Inserisci il tuo nome, seleziona un campo e un layout per iniziare il round.");
     return;
   }
 
@@ -50,7 +78,7 @@ function updateHoleNumber() {
 
 function autoFillHoleData() {
   const course = document.getElementById("course").value;
-  const tee = "Giallo"; // Per ora hardcoded, poi sarà dinamico
+  const tee = document.getElementById("layout").value;
   const courseData = courses[course]?.tees[tee];
 
   if (courseData && courseData.holes.length >= currentHole) {
@@ -101,3 +129,8 @@ function clearInputs() {
   });
   document.getElementById("fairway").value = "na";
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+  populateCourseOptions();
+  document.getElementById("course").addEventListener("input", updateLayoutOptions);
+});
