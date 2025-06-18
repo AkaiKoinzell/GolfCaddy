@@ -4,6 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Golf Tracker</title>
+  <script type="module">
+    // Firebase SDK imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
+      authDomain: "golfcaddy-ec421.firebaseapp.com",
+      projectId: "golfcaddy-ec421",
+      storageBucket: "golfcaddy-ec421.firebasestorage.app",
+      messagingSenderId: "497160592489",
+      appId: "1:497160592489:web:548701ab6d395e579456f8",
+      measurementId: "G-XGBVHR0BD5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.db = db;
+    window.addDoc = addDoc;
+    window.collection = collection;
+  </script>
   <style>
     body {
       font-family: sans-serif;
@@ -29,7 +51,7 @@
       display: block;
       margin-top: 1rem;
     }
-    input, select, button {
+    input, select, button, textarea {
       width: 100%;
       padding: 0.5rem;
       margin-top: 0.3rem;
@@ -54,6 +76,9 @@
   <main>
     <section id="start-round">
       <h2>Nuovo Round</h2>
+      <label for="player">Nome Giocatore</label>
+      <input type="text" id="player" placeholder="Il tuo nome" />
+
       <label for="course">Campo</label>
       <select id="course">
         <option value="">-- Seleziona un campo --</option>
@@ -66,6 +91,10 @@
         <option value="9">9 buche</option>
         <option value="18">18 buche</option>
       </select>
+
+      <label for="notes">Note generali sul round</label>
+      <textarea id="notes" rows="3" placeholder="Es. Giornata ventosa, campo in buone condizioni..."></textarea>
+
       <button onclick="startRound()">Inizia Round</button>
     </section>
 
@@ -104,6 +133,12 @@
 
     function startRound() {
       const holesSelect = document.getElementById("holes");
+      const course = document.getElementById("course").value;
+      const player = document.getElementById("player").value;
+      if (!course || !player) {
+        alert("Inserisci il tuo nome e seleziona un campo per iniziare il round.");
+        return;
+      }
       totalHoles = parseInt(holesSelect.value);
       currentHole = 1;
       roundData.length = 0;
@@ -116,7 +151,7 @@
       document.getElementById("hole-number").textContent = currentHole;
     }
 
-    function saveHole() {
+    async function saveHole() {
       const hole = {
         number: currentHole,
         par: parseInt(document.getElementById("par").value),
@@ -127,12 +162,23 @@
         penalties: parseInt(document.getElementById("penalties").value)
       };
       roundData.push(hole);
-      currentHole++;
 
-      if (currentHole > totalHoles) {
-        alert("Round completato!" + JSON.stringify(roundData, null, 2));
+      if (currentHole >= totalHoles) {
+        try {
+          await addDoc(collection(db, "golf_rounds"), {
+            timestamp: new Date().toISOString(),
+            course: document.getElementById("course").value,
+            player: document.getElementById("player").value,
+            notes: document.getElementById("notes").value,
+            holes: roundData
+          });
+          alert("Round completato! I dati sono stati salvati online.");
+        } catch (error) {
+          alert("Errore nel salvataggio su Firebase: " + error.message);
+        }
         location.reload();
       } else {
+        currentHole++;
         updateHoleNumber();
         clearInputs();
       }
