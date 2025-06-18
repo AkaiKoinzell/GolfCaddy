@@ -2,8 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import {
   getFirestore,
   collection,
-  addDoc,
-  getDocs
+  addDoc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { courses } from "./courses.js";
 
@@ -22,11 +21,10 @@ const db = getFirestore(app);
 
 let currentHole = 1;
 let totalHoles = 9;
-let selectedHoleNumbers = [];
+let selectedHoles = [];
 const roundData = [];
 
 window.populateCourseOptions = function () {
-  const courseInput = document.getElementById("course");
   const datalist = document.getElementById("course-options");
   datalist.innerHTML = "";
   Object.keys(courses).forEach(courseName => {
@@ -54,20 +52,20 @@ window.updateLayoutOptions = function () {
 
 window.updateComboOptions = function () {
   const course = document.getElementById("course").value;
-  const comboDiv = document.getElementById("combo-9-select");
+  const comboContainer = document.getElementById("combo-9-select");
   const comboSelect = document.getElementById("combo9");
   comboSelect.innerHTML = "";
 
   if (courses[course]?.combinations9) {
-    comboDiv.style.display = "block";
-    Object.keys(courses[course].combinations9).forEach(combo => {
+    comboContainer.style.display = "block";
+    Object.entries(courses[course].combinations9).forEach(([label, holes]) => {
       const option = document.createElement("option");
-      option.value = combo;
-      option.textContent = combo;
+      option.value = label;
+      option.textContent = label;
       comboSelect.appendChild(option);
     });
   } else {
-    comboDiv.style.display = "none";
+    comboContainer.style.display = "none";
   }
 };
 
@@ -76,11 +74,16 @@ window.startRound = function () {
   const course = document.getElementById("course").value;
   const layout = document.getElementById("layout").value;
   const player = document.getElementById("player").value;
-  const notes = document.getElementById("notes").value;
-  const is9 = holesSelect.value === "9";
+  const combo = document.getElementById("combo9")?.value;
 
   if (!course || !player || !layout) {
     alert("Inserisci il tuo nome, seleziona un campo e un layout per iniziare il round.");
+    return;
+  }
+
+  const teeData = courses[course]?.tees[layout];
+  if (!teeData) {
+    alert("Layout selezionato non valido.");
     return;
   }
 
@@ -88,11 +91,10 @@ window.startRound = function () {
   currentHole = 1;
   roundData.length = 0;
 
-  if (is9 && courses[course]?.combinations9) {
-    const comboName = document.getElementById("combo9").value;
-    selectedHoleNumbers = courses[course].combinations9[comboName];
+  if (totalHoles === 9 && combo && courses[course]?.combinations9?.[combo]) {
+    selectedHoles = courses[course].combinations9[combo].map(holeNumber => teeData.holes.find(h => h.number === holeNumber));
   } else {
-    selectedHoleNumbers = Array.from({ length: totalHoles }, (_, i) => i + 1);
+    selectedHoles = teeData.holes.slice(0, totalHoles);
   }
 
   document.getElementById("start-round").style.display = "none";
@@ -102,17 +104,12 @@ window.startRound = function () {
 };
 
 function updateHoleNumber() {
-  document.getElementById("hole-number").textContent = selectedHoleNumbers[currentHole - 1];
+  document.getElementById("hole-number").textContent = currentHole;
 }
 
 function autoFillHoleData() {
-  const course = document.getElementById("course").value;
-  const tee = document.getElementById("layout").value;
-  const courseData = courses[course]?.tees[tee];
-  const holeIndex = selectedHoleNumbers[currentHole - 1] - 1;
-
-  if (courseData && courseData.holes.length > holeIndex) {
-    const hole = courseData.holes[holeIndex];
+  const hole = selectedHoles[currentHole - 1];
+  if (hole) {
     document.getElementById("par").value = hole.par;
     document.getElementById("distance").value = hole.distance;
   }
@@ -120,7 +117,7 @@ function autoFillHoleData() {
 
 window.saveHole = async function () {
   const hole = {
-    number: selectedHoleNumbers[currentHole - 1],
+    number: selectedHoles[currentHole - 1].number,
     par: parseInt(document.getElementById("par").value),
     distance: parseInt(document.getElementById("distance").value),
     score: parseInt(document.getElementById("score").value),
@@ -132,10 +129,15 @@ window.saveHole = async function () {
 
   if (currentHole >= totalHoles) {
     try {
+      const course = document.getElementById("course").value;
+      const layout = document.getElementById("layout").value;
+      const teeData = courses[course]?.tees[layout];
       await addDoc(collection(db, "golf_rounds"), {
         timestamp: new Date().toISOString(),
-        course: document.getElementById("course").value,
-        layout: document.getElementById("layout")?.value || "",
+        course,
+        layout,
+        cr: teeData?.cr || null,
+        slope: teeData?.slope || null,
         player: document.getElementById("player").value,
         notes: document.getElementById("notes").value,
         holes: roundData
@@ -166,5 +168,4 @@ window.addEventListener("DOMContentLoaded", () => {
     updateLayoutOptions();
     updateComboOptions();
   });
-  document.getElementById("holes").addEventListener("change", updateComboOptions);
 });
