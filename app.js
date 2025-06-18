@@ -49,7 +49,30 @@ window.updateLayoutOptions = function () {
       layoutSelect.appendChild(option);
     });
   }
+
+  updateCombo9Options();
 };
+
+function updateCombo9Options() {
+  const holesSelect = document.getElementById("holes");
+  const combo9Div = document.getElementById("combo9-options");
+  const combo9Select = document.getElementById("combo9");
+  const course = document.getElementById("course").value;
+
+  combo9Select.innerHTML = "";
+
+  if (holesSelect.value === "9" && courses[course]?.combos) {
+    combo9Div.style.display = "block";
+    courses[course].combos.forEach(combo => {
+      const option = document.createElement("option");
+      option.value = combo.join(",");
+      option.textContent = combo.join(" + ");
+      combo9Select.appendChild(option);
+    });
+  } else {
+    combo9Div.style.display = "none";
+  }
+}
 
 window.startRound = function () {
   const holesSelect = document.getElementById("holes");
@@ -106,6 +129,7 @@ window.saveHole = async function () {
         timestamp: new Date().toISOString(),
         course: document.getElementById("course").value,
         layout: document.getElementById("layout")?.value || "",
+        combo9: document.getElementById("combo9")?.value || "",
         player: document.getElementById("player").value,
         notes: document.getElementById("notes").value,
         holes: roundData
@@ -131,17 +155,7 @@ function clearInputs() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  // Popola datalist
-  const courseList = document.getElementById("course-list");
-  Object.keys(courses).forEach(courseName => {
-    const option = document.createElement("option");
-    option.value = courseName;
-    courseList.appendChild(option);
-  });
-
-  // Quando cambio input del campo, aggiorno layout
+  populateCourseOptions();
   document.getElementById("course").addEventListener("input", updateLayoutOptions);
-
-  // Se c'è un valore iniziale selezionato nel campo (da autocomplete), aggiorna i layout
-  updateLayoutOptions();
+  document.getElementById("holes").addEventListener("change", updateCombo9Options);
 });
