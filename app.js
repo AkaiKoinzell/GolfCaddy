@@ -5,6 +5,7 @@ import {
   addDoc,
   getDocs
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { courses } from "./courses.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
@@ -26,7 +27,6 @@ const roundData = [];
 window.startRound = function () {
   const holesSelect = document.getElementById("holes");
   const course = document.getElementById("course").value;
-  const layout = document.getElementById("layout")?.value || "";
   const player = document.getElementById("player").value;
 
   if (!course || !player) {
@@ -41,10 +41,23 @@ window.startRound = function () {
   document.getElementById("start-round").style.display = "none";
   document.getElementById("hole-input").style.display = "block";
   updateHoleNumber();
+  autoFillHoleData();
 };
 
 function updateHoleNumber() {
   document.getElementById("hole-number").textContent = currentHole;
+}
+
+function autoFillHoleData() {
+  const course = document.getElementById("course").value;
+  const tee = "Giallo"; // Per ora hardcoded, poi sarà dinamico
+  const courseData = courses[course]?.tees[tee];
+
+  if (courseData && courseData.holes.length >= currentHole) {
+    const hole = courseData.holes[currentHole - 1];
+    document.getElementById("par").value = hole.par;
+    document.getElementById("distance").value = hole.distance;
+  }
 }
 
 window.saveHole = async function () {
@@ -78,6 +91,7 @@ window.saveHole = async function () {
     currentHole++;
     updateHoleNumber();
     clearInputs();
+    autoFillHoleData();
   }
 };
 
