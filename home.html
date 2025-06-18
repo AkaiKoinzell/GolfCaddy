@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Golf Tracker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      color: #333;
+    }
+    header, main {
+      padding: 1rem;
+    }
+    header {
+      background: #006400;
+      color: white;
+    }
+    h1 {
+      margin: 0;
+    }
+    section {
+      margin-bottom: 2rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+      box-sizing: border-box;
+    }
+    button {
+      background: #006400;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background: #228B22;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Golf Tracker</h1>
+  </header>
+  <main>
+    <section id="start-round">
+      <h2>Nuovo Round</h2>
+      <label for="course">Campo</label>
+      <select id="course">
+        <option value="">-- Seleziona un campo --</option>
+        <option value="roma_club">Roma Golf Club</option>
+        <option value="paradise_golf">Paradise Golf Resort</option>
+        <!-- Altri campi -->
+      </select>
+      <label for="holes">Numero buche</label>
+      <select id="holes">
+        <option value="9">9 buche</option>
+        <option value="18">18 buche</option>
+      </select>
+      <button onclick="startRound()">Inizia Round</button>
+    </section>
+
+    <section id="hole-input" style="display:none;">
+      <h2>Inserisci Dati Buca <span id="hole-number">1</span></h2>
+      <label for="par">Par</label>
+      <input type="number" id="par" min="3" max="5" />
+
+      <label for="distance">Distanza (metri)</label>
+      <input type="number" id="distance" />
+
+      <label for="score">Colpi</label>
+      <input type="number" id="score" />
+
+      <label for="putts">Putt</label>
+      <input type="number" id="putts" />
+
+      <label for="fairway">Fairway colpito</label>
+      <select id="fairway">
+        <option value="na">N/A</option>
+        <option value="yes">Sì</option>
+        <option value="no">No</option>
+      </select>
+
+      <label for="penalties">Penalità</label>
+      <input type="number" id="penalties" min="0" />
+
+      <button onclick="saveHole()">Salva e vai alla prossima</button>
+    </section>
+  </main>
+
+  <script>
+    let currentHole = 1;
+    let totalHoles = 9;
+    const roundData = [];
+
+    function startRound() {
+      const holesSelect = document.getElementById("holes");
+      totalHoles = parseInt(holesSelect.value);
+      currentHole = 1;
+      roundData.length = 0;
+      document.getElementById("start-round").style.display = "none";
+      document.getElementById("hole-input").style.display = "block";
+      updateHoleNumber();
+    }
+
+    function updateHoleNumber() {
+      document.getElementById("hole-number").textContent = currentHole;
+    }
+
+    function saveHole() {
+      const hole = {
+        number: currentHole,
+        par: parseInt(document.getElementById("par").value),
+        distance: parseInt(document.getElementById("distance").value),
+        score: parseInt(document.getElementById("score").value),
+        putts: parseInt(document.getElementById("putts").value),
+        fairway: document.getElementById("fairway").value,
+        penalties: parseInt(document.getElementById("penalties").value)
+      };
+      roundData.push(hole);
+      currentHole++;
+
+      if (currentHole > totalHoles) {
+        alert("Round completato!" + JSON.stringify(roundData, null, 2));
+        location.reload();
+      } else {
+        updateHoleNumber();
+        clearInputs();
+      }
+    }
+
+    function clearInputs() {
+      ["par", "distance", "score", "putts", "penalties"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("fairway").value = "na";
+    }
+  </script>
+</body>
+</html>
