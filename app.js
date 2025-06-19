@@ -109,9 +109,11 @@ window.startRound = function () {
   let totalDistance = 0;
 
   if (totalHoles === 9 && courses[course]?.combinations9?.[combo]) {
-    const layoutKey = layout;
     const comboHoles = courses[course].combinations9[combo];
-    const teeData = courses[course]?.tees[layoutKey];
+    const matchingLayout = Object.keys(courses[course].tees).find(layoutKey =>
+      layoutKey.toLowerCase().includes(combo.toLowerCase())
+    );
+    const teeData = courses[course]?.tees[matchingLayout];
     if (!teeData) {
       alert("Errore nel recuperare il layout selezionato per il percorso a 9 buche.");
       return;
