@@ -25,12 +25,20 @@ let selectedHoles = [];
 const roundData = [];
 
 window.populateCourseOptions = function () {
+  const courseInput = document.getElementById("course");
   const datalist = document.getElementById("course-options");
   datalist.innerHTML = "";
-  Object.keys(courses).forEach(courseName => {
+
+  Object.keys(courses).forEach(name => {
     const option = document.createElement("option");
-    option.value = courseName;
+    option.value = name;
     datalist.appendChild(option);
+  });
+
+  // Quando cambia il campo "course", aggiorna il layout e le combinazioni
+  courseInput.addEventListener("change", () => {
+    updateLayoutOptions();
+    updateComboOptions();
   });
 };
 
@@ -52,12 +60,12 @@ window.updateLayoutOptions = function () {
 
 window.updateComboOptions = function () {
   const course = document.getElementById("course").value;
-  const holesValue = document.getElementById("holes").value;
+  const holes = document.getElementById("holes").value;
   const comboContainer = document.getElementById("combo-9-select");
   const comboSelect = document.getElementById("combo9");
   comboSelect.innerHTML = "";
 
-  if (holesValue === "9" && courses[course]?.combinations9) {
+  if (holes === "9" && courses[course]?.combinations9) {
     comboContainer.style.display = "block";
     Object.entries(courses[course].combinations9).forEach(([label]) => {
       const option = document.createElement("option");
@@ -65,7 +73,7 @@ window.updateComboOptions = function () {
       option.textContent = label;
       comboSelect.appendChild(option);
     });
-  } else if (holesValue === "18" && courses[course]?.combinations18) {
+  } else if (holes === "18" && courses[course]?.combinations18) {
     comboContainer.style.display = "block";
     Object.entries(courses[course].combinations18).forEach(([label]) => {
       const option = document.createElement("option");
@@ -102,8 +110,13 @@ window.startRound = function () {
 
   if (totalHoles === 9 && courses[course]?.combinations9?.[combo]) {
     const layoutKey = layout;
+    const comboHoles = courses[course].combinations9[combo];
     const teeData = courses[course]?.tees[layoutKey];
-    selectedHoles = courses[course].combinations9[combo].map(n => teeData.holes.find(h => h.number === n));
+    if (!teeData) {
+      alert("Errore nel recuperare il layout selezionato per il percorso a 9 buche.");
+      return;
+    }
+    selectedHoles = comboHoles.map(n => teeData.holes.find(h => h.number === n));
     cr = teeData?.cr;
     slope = teeData?.slope;
     totalPar = selectedHoles.reduce((sum, h) => sum + h.par, 0);
@@ -122,8 +135,10 @@ window.startRound = function () {
         }
       });
     });
-    cr = parseFloat((cr / 2).toFixed(1));
-    slope = Math.round(slope / 2);
+    const parts = courses[course].combinations18[combo];
+    const count = parts.length;
+    cr = parseFloat((cr / count).toFixed(1));
+    slope = Math.round(slope / count);
   } else {
     const teeData = courses[course]?.tees[layout];
     selectedHoles = teeData?.holes.slice(0, totalHoles);
