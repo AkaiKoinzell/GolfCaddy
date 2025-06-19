@@ -57,22 +57,23 @@ export const courses = {
       "Percorso Blu": [1, 2, 3, 4, 5, 6, 7, 8, 9],
       "Percorso Bianco": [1, 2, 3, 4, 5, 6, 7, 8, 9],
       "Percorso Rosso": [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    }
+    },
     combinations18: {
-  "Blu + Bianco": [
-    { layout: "Giallo - Percorso Blu", holes: [1,2,3,4,5,6,7,8,9] },
-    { layout: "Giallo - Percorso Bianco", holes: [1,2,3,4,5,6,7,8,9] }
-  ],
-  "Bianco + Rosso": [
-    { layout: "Giallo - Percorso Bianco", holes: [1,2,3,4,5,6,7,8,9] },
-    { layout: "Giallo - Percorso Rosso", holes: [1,2,3,4,5,6,7,8,9] }
-  ],
-  "Rosso + Blu": [
-    { layout: "Giallo - Percorso Rosso", holes: [1,2,3,4,5,6,7,8,9] },
-    { layout: "Giallo - Percorso Blu", holes: [1,2,3,4,5,6,7,8,9] }
-  ]
-}
-  }
+      "Blu + Bianco": [
+        { layout: "Giallo - Percorso Blu", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        { layout: "Giallo - Percorso Bianco", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+      ],
+      "Bianco + Rosso": [
+        { layout: "Giallo - Percorso Bianco", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        { layout: "Giallo - Percorso Rosso", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+      ],
+      "Rosso + Blu": [
+        { layout: "Giallo - Percorso Rosso", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        { layout: "Giallo - Percorso Blu", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+      ]
+    }
+  },
+
   "Golfclub Radstadt": {
     tees: {
       "Giallo": {
@@ -101,6 +102,10 @@ export const courses = {
           { number: 18, par: 3, hcp: 11, distance: 195 }
         ]
       }
+    },
+    combinations9: {
+      "Front 9": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "Back 9": [10, 11, 12, 13, 14, 15, 16, 17, 18]
     }
   }
 };
