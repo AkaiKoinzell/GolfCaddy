@@ -109,16 +109,14 @@ window.startRound = function () {
   let totalDistance = 0;
 
   if (totalHoles === 9 && courses[course]?.combinations9?.[combo]) {
-    const comboHoles = courses[course]?.combinations9?.[combo];
-    if (!Array.isArray(comboHoles)) {
-      alert("Combinazione 9 buche non valida o non trovata.");
-      return;
-    }
+    const comboData = courses[course]?.combinations9?.[combo];
+if (!comboData || !Array.isArray(comboData.holes)) {
+  alert("Combinazione 9 buche non valida o non trovata.");
+  return;
+}
 
-    const layoutKey = Object.keys(courses[course].tees).find(layoutName =>
-      layoutName.toLowerCase().includes(combo.toLowerCase())
-    );
-    const teeData = courses[course]?.tees?.[layoutKey];
+const layoutKey = comboData.layout;
+const teeData = courses[course]?.tees?.[layoutKey];
 
     if (!teeData || !Array.isArray(teeData.holes)) {
       alert("Layout o dati tee non validi.");
