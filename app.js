@@ -169,6 +169,9 @@ function autoFillHoleData() {
 }
 
 window.saveHole = async function () {
+  const saveButton = document.querySelector("button[onclick='saveHole()']");
+  saveButton.disabled = true; // blocca subito il doppio click
+
   const hole = {
     number: selectedHoles[currentHole - 1].number,
     par: parseInt(document.getElementById("par").value),
@@ -181,6 +184,12 @@ window.saveHole = async function () {
   roundData.push(hole);
 
   if (currentHole >= totalHoles) {
+    // Evita salvataggi doppi
+    if (localStorage.getItem("roundSaved") === "true") {
+      alert("Round già salvato.");
+      return;
+    }
+
     try {
       const { course, layout, player, combo, cr, slope, totalPar, totalDistance } = window._roundMeta;
       await addDoc(collection(db, "golf_rounds"), {
@@ -196,18 +205,24 @@ window.saveHole = async function () {
         notes: document.getElementById("notes").value,
         holes: roundData
       });
+
+      localStorage.setItem("roundSaved", "true"); // flag per evitare duplicati
+
       alert("Round completato! I dati sono stati salvati online.");
+      setTimeout(() => location.reload(), 1000); // delay per evitare race conditions
     } catch (error) {
       alert("Errore nel salvataggio su Firebase: " + error.message);
+      saveButton.disabled = false; // riattiva in caso di errore
     }
-    location.reload();
   } else {
     currentHole++;
     updateHoleNumber();
     clearInputs();
     autoFillHoleData();
+    saveButton.disabled = false; // riattiva per buche successive
   }
 };
+
 
 function clearInputs() {
   ["par", "distance", "score", "putts", "penalties"].forEach(id => {
@@ -223,4 +238,6 @@ window.addEventListener("DOMContentLoaded", () => {
     updateComboOptions();
   });
   document.getElementById("holes").addEventListener("change", updateComboOptions);
+
+  localStorage.removeItem("roundSaved"); // reset all'avvio
 });
