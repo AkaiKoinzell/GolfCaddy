@@ -1,5 +1,4 @@
 export const courses = {
-  export const courses = {
   "Golf Club Parco de' Medici": {
     tees: {
       "Giallo - Percorso Blu": {
