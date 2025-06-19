@@ -40,7 +40,91 @@ window.populateCourseOptions = function () {
     updateComboOptions();
   });
 };
+function updateHoleNumber() {
+  document.getElementById("hole-number").textContent = currentHole;
+}
 
+function autoFillHoleData() {
+  const hole = selectedHoles[currentHole - 1];
+  if (hole) {
+    document.getElementById("par").value = hole.par;
+    document.getElementById("distance").value = hole.distance;
+  }
+}
+
+window.saveHole = async function () {
+  const saveButton = document.querySelector("button[onclick='saveHole()']");
+  saveButton.disabled = true; // blocca subito il doppio click
+
+  const hole = {
+    number: selectedHoles[currentHole - 1].number,
+    par: parseInt(document.getElementById("par").value),
+    distance: parseInt(document.getElementById("distance").value),
+    score: parseInt(document.getElementById("score").value),
+    putts: parseInt(document.getElementById("putts").value),
+    fairway: document.getElementById("fairway").value,
+    penalties: parseInt(document.getElementById("penalties").value)
+  };
+  roundData.push(hole);
+
+  if (currentHole >= totalHoles) {
+    // Evita salvataggi doppi
+    if (localStorage.getItem("roundSaved") === "true") {
+      alert("Round già salvato.");
+      return;
+    }
+
+    try {
+      const { course, layout, player, combo, cr, slope, totalPar, totalDistance } = window._roundMeta;
+      await addDoc(collection(db, "golf_rounds"), {
+        timestamp: new Date().toISOString(),
+        course,
+        layout,
+        player,
+        combo,
+        cr,
+        slope,
+        totalPar,
+        totalDistance,
+        notes: document.getElementById("notes").value,
+        holes: roundData
+      });
+
+      localStorage.setItem("roundSaved", "true"); // flag per evitare duplicati
+
+      alert("Round completato! I dati sono stati salvati online.");
+      setTimeout(() => location.reload(), 1000); // delay per evitare race conditions
+    } catch (error) {
+      alert("Errore nel salvataggio su Firebase: " + error.message);
+      saveButton.disabled = false; // riattiva in caso di errore
+    }
+  } else {
+    currentHole++;
+    updateHoleNumber();
+    clearInputs();
+    autoFillHoleData();
+    saveButton.disabled = false; // riattiva per buche successive
+  }
+};
+
+
+function clearInputs() {
+  ["par", "distance", "score", "putts", "penalties"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("fairway").value = "na";
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  populateCourseOptions();
+  document.getElementById("course").addEventListener("input", () => {
+    updateLayoutOptions();
+    updateComboOptions();
+  });
+  document.getElementById("holes").addEventListener("change", updateComboOptions);
+
+  localStorage.removeItem("roundSaved"); // reset all'avvio
+});
 window.updateLayoutOptions = function () {
   const course = document.getElementById("course").value;
   const layoutSelect = document.getElementById("layout");
