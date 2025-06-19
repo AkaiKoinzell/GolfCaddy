@@ -168,7 +168,7 @@
         .sort((a,b)=>a.date - b.date);
 
       document.getElementById('hcp-value').textContent = (()=> {
-        const h = calculateHandicapIndex(allRounds);
+        const h = calculateHandicap(allRounds);
         return typeof h==='number' ? h.toFixed(1) : '--';
       })();
 
