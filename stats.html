@@ -163,12 +163,13 @@
 
     function updateDisplay() {
       const rounds = allRounds
-        .filter(r => (filters.format==='all'||r.format == filters.format))
+        .filter(r => (filters.format==='all'||r.format === parseInt(filters.format)))
         .filter(r => (filters.course==='all'||r.course === filters.course))
         .sort((a,b)=>a.date - b.date);
 
       document.getElementById('hcp-value').textContent = (()=> {
-        const h = calculateHandicap(allRounds);
+        const validRounds = allRounds.filter(r => r.format === 18 || r.combo);
+        const h = calculateHandicap(validRounds);
         return typeof h==='number' ? h.toFixed(1) : '--';
       })();
 
@@ -191,7 +192,7 @@
           <td>${r.course}</td>
           <td>${r.format} buche</td>
           <td>${r.score}</td>
-          <td>${netto>=0? '+'+netto: netto}</td>
+          <td>${netto !== '' ? (netto >= 0 ? '+' + netto : netto) : ''}</td>
           <td><a href="round.html?id=${r.id}">Dettagli</a></td>
         `;
         tbody.appendChild(tr);
