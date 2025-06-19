@@ -52,13 +52,22 @@ window.updateLayoutOptions = function () {
 
 window.updateComboOptions = function () {
   const course = document.getElementById("course").value;
+  const holesValue = document.getElementById("holes").value;
   const comboContainer = document.getElementById("combo-9-select");
   const comboSelect = document.getElementById("combo9");
   comboSelect.innerHTML = "";
 
-  if (courses[course]?.combinations9) {
+  if (holesValue === "9" && courses[course]?.combinations9) {
     comboContainer.style.display = "block";
-    Object.entries(courses[course].combinations9).forEach(([label, holes]) => {
+    Object.entries(courses[course].combinations9).forEach(([label]) => {
+      const option = document.createElement("option");
+      option.value = label;
+      option.textContent = label;
+      comboSelect.appendChild(option);
+    });
+  } else if (holesValue === "18" && courses[course]?.combinations18) {
+    comboContainer.style.display = "block";
+    Object.entries(courses[course].combinations18).forEach(([label]) => {
       const option = document.createElement("option");
       option.value = label;
       option.textContent = label;
@@ -76,14 +85,8 @@ window.startRound = function () {
   const player = document.getElementById("player").value;
   const combo = document.getElementById("combo9")?.value;
 
-  if (!course || !player || !layout) {
-    alert("Inserisci il tuo nome, seleziona un campo e un layout per iniziare il round.");
-    return;
-  }
-
-  const teeData = courses[course]?.tees[layout];
-  if (!teeData) {
-    alert("Layout selezionato non valido.");
+  if (!course || !player) {
+    alert("Inserisci il tuo nome, seleziona un campo per iniziare il round.");
     return;
   }
 
@@ -91,11 +94,46 @@ window.startRound = function () {
   currentHole = 1;
   roundData.length = 0;
 
-  if (totalHoles === 9 && combo && courses[course]?.combinations9?.[combo]) {
-    selectedHoles = courses[course].combinations9[combo].map(holeNumber => teeData.holes.find(h => h.number === holeNumber));
+  selectedHoles = [];
+  let cr = 0;
+  let slope = 0;
+  let totalPar = 0;
+  let totalDistance = 0;
+
+  if (totalHoles === 9 && courses[course]?.combinations9?.[combo]) {
+    const layoutKey = layout;
+    const teeData = courses[course]?.tees[layoutKey];
+    selectedHoles = courses[course].combinations9[combo].map(n => teeData.holes.find(h => h.number === n));
+    cr = teeData?.cr;
+    slope = teeData?.slope;
+    totalPar = selectedHoles.reduce((sum, h) => sum + h.par, 0);
+    totalDistance = selectedHoles.reduce((sum, h) => sum + h.distance, 0);
+  } else if (totalHoles === 18 && courses[course]?.combinations18?.[combo]) {
+    courses[course].combinations18[combo].forEach(({ layout, holes }) => {
+      const teeData = courses[course]?.tees[layout];
+      cr += teeData?.cr || 0;
+      slope += teeData?.slope || 0;
+      holes.forEach(n => {
+        const hole = teeData.holes.find(h => h.number === n);
+        if (hole) {
+          selectedHoles.push(hole);
+          totalPar += hole.par;
+          totalDistance += hole.distance;
+        }
+      });
+    });
+    cr = parseFloat((cr / 2).toFixed(1));
+    slope = Math.round(slope / 2);
   } else {
-    selectedHoles = teeData.holes.slice(0, totalHoles);
+    const teeData = courses[course]?.tees[layout];
+    selectedHoles = teeData?.holes.slice(0, totalHoles);
+    cr = teeData?.cr;
+    slope = teeData?.slope;
+    totalPar = selectedHoles.reduce((sum, h) => sum + h.par, 0);
+    totalDistance = selectedHoles.reduce((sum, h) => sum + h.distance, 0);
   }
+
+  window._roundMeta = { course, layout, player, combo, cr, slope, totalPar, totalDistance };
 
   document.getElementById("start-round").style.display = "none";
   document.getElementById("hole-input").style.display = "block";
@@ -129,16 +167,17 @@ window.saveHole = async function () {
 
   if (currentHole >= totalHoles) {
     try {
-      const course = document.getElementById("course").value;
-      const layout = document.getElementById("layout").value;
-      const teeData = courses[course]?.tees[layout];
+      const { course, layout, player, combo, cr, slope, totalPar, totalDistance } = window._roundMeta;
       await addDoc(collection(db, "golf_rounds"), {
         timestamp: new Date().toISOString(),
         course,
         layout,
-        cr: teeData?.cr || null,
-        slope: teeData?.slope || null,
-        player: document.getElementById("player").value,
+        player,
+        combo,
+        cr,
+        slope,
+        totalPar,
+        totalDistance,
         notes: document.getElementById("notes").value,
         holes: roundData
       });
@@ -168,4 +207,5 @@ window.addEventListener("DOMContentLoaded", () => {
     updateLayoutOptions();
     updateComboOptions();
   });
+  document.getElementById("holes").addEventListener("change", updateComboOptions);
 });
