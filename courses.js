@@ -1,6 +1,13 @@
 export const courses = {
-  "Golf Club Parco de' Medici": {
+  "Golf Club Parco de' Medici (IT)": {
     tees: {
+      "Giallo": {
+        cr: null,
+        slope: null,
+        par: null,
+        totalDistance: null,
+        holes: []
+      },
       "Giallo - Percorso Blu": {
         cr: 70.7,
         slope: 135,
@@ -22,7 +29,7 @@ export const courses = {
         cr: 70.7,
         slope: 135,
         par: 35,
-        totalDistance: 3378,
+        totalDistance: 2877,
         holes: [
           { number: 1, par: 4, hcp: 3, distance: 390 },
           { number: 2, par: 3, hcp: 7, distance: 191 },
@@ -39,7 +46,7 @@ export const courses = {
         cr: 70.7,
         slope: 135,
         par: 35,
-        totalDistance: 3060,
+        totalDistance: 2689,
         holes: [
           { number: 1, par: 4, hcp: 7, distance: 343 },
           { number: 2, par: 3, hcp: 15, distance: 126 },
@@ -54,9 +61,18 @@ export const courses = {
       }
     },
     combinations9: {
-      "Percorso Blu": [1, 2, 3, 4, 5, 6, 7, 8, 9],
-      "Percorso Bianco": [1, 2, 3, 4, 5, 6, 7, 8, 9],
-      "Percorso Rosso": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      "Percorso Blu": {
+        layout: "Giallo - Percorso Blu",
+        holes: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      },
+      "Percorso Bianco": {
+        layout: "Giallo - Percorso Bianco",
+        holes: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      },
+      "Percorso Rosso": {
+        layout: "Giallo - Percorso Rosso",
+        holes: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      }
     },
     combinations18: {
       "Blu + Bianco": [
@@ -74,7 +90,98 @@ export const courses = {
     }
   },
 
-  "Golfclub Radstadt": {
+  "Glf Resort Kremstal (AT)": {
+    tees: {
+      "Giallo": {
+        cr: null,
+        slope: null,
+        par: null,
+        totalDistance: null,
+        holes: []
+      },
+      "Giallo - A - Bergergutkurs": {
+        cr: 71.3,
+        slope: 127,
+        par: 36,
+        totalDistance: 2909,
+        holes: [
+          { number: 1, par: 4, hcp: 5, distance: 343 },
+          { number: 2, par: 3, hcp: 15, distance: 154 },
+          { number: 3, par: 5, hcp: 3, distance: 493 },
+          { number: 4, par: 4, hcp: 1, distance: 404 },
+          { number: 5, par: 4, hcp: 7, distance: 343 },
+          { number: 6, par: 4, hcp: 17, distance: 259 },
+          { number: 7, par: 5, hcp: 11, distance: 481 },
+          { number: 8, par: 3, hcp: 13, distance: 180 },
+          { number: 9, par: 5, hcp: 9, distance: 252 }
+        ]
+      },
+      "Giallo - B - Panoramakurs": {
+        cr: 71.3,
+        slope: 127,
+        par: 36,
+        totalDistance: 2994,
+        holes: [
+          { number: 1, par: 4, hcp: 2, distance: 384 },
+          { number: 2, par: 3, hcp: 12, distance: 190 },
+          { number: 3, par: 5, hcp: 8, distance: 465 },
+          { number: 4, par: 4, hcp: 16, distance: 304 },
+          { number: 5, par: 4, hcp: 6, distance: 344 },
+          { number: 6, par: 4, hcp: 10, distance: 333 },
+          { number: 7, par: 4, hcp: 4, distance: 368 },
+          { number: 8, par: 3, hcp: 18, distance: 133 },
+          { number: 9, par: 5, hcp: 14, distance: 473 }
+        ]
+      },
+      "Giallo - C - Cherndlgutkurs": {
+        cr: 68,1,
+        slope: 121,
+        par: 35,
+        totalDistance: 2568,
+        holes: [
+          { number: 1, par: 3, hcp: 11, distance: 140 },
+          { number: 2, par: 4, hcp: 7, distance: 337 },
+          { number: 3, par: 5, hcp: 15, distance: 410 },
+          { number: 4, par: 3, hcp: 17, distance: 131 },
+          { number: 5, par: 4, hcp: 9, distance: 326 },
+          { number: 6, par: 4, hcp: 3, distance: 302 },
+          { number: 7, par: 5, hcp: 5, distance: 435 },
+          { number: 8, par: 3, hcp: 13, distance: 169 },
+          { number: 9, par: 4, hcp: 1, distance: 318 }
+        ]
+      }
+    },
+    combinations9: {
+      "A - Bergergutkurs": {
+        layout: "Giallo - A - Bergergutkurs",
+        holes: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      },
+      "Giallo - B - Panoramakurs": {
+        layout: "Giallo - B - Panoramakurs",
+        holes: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      },
+      "C - Cherndlgutkurs": {
+        layout: "Giallo - C - Cherndlgutkurs",
+        holes: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      }
+    },
+    combinations18: {
+      "A + B": [
+        { layout: "Giallo - A - Bergergutkurs", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        { layout: "Giallo - B - Panoramakurs", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+      ],
+      "B + A": [
+        { layout: "Giallo - B - Panoramakurs", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        { layout: "Giallo - A - Bergergutkurs", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+      ],
+      "C + C": [
+        { layout: "Giallo - C - Cherndlgutkurs", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        { layout: "Giallo - C - Cherndlgutkurs", holes: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+      ]
+    }
+  },
+  
+  "Golfclub Radstadt (AT)": {
     tees: {
       "Giallo": {
         cr: 70.6,
