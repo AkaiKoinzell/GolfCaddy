@@ -1,35 +1,52 @@
-export function calculateHandicapIndex(rounds) {
-  const differentials = [];
+// handicap.js
 
-  rounds.forEach(r => {
-    if (!r.holes || r.holes.length === 0 || !r.totalPar || !r.totalDistance || !r.cr || !r.slope) return;
+export function calculateHandicap(rounds) {
+  // Filtra solo round validi (con CR, slope, totalPar, totalDistance e almeno 9 buche)
+  const validRounds = rounds.filter(r =>
+    r.cr && r.slope && r.totalPar && r.totalDistance && r.holes?.length >= 9
+  );
 
-    let grossScore = r.holes.reduce((sum, h) => sum + (h.score || 0), 0);
-    let par = r.totalPar;
-    let cr = r.cr;
-    let slope = r.slope;
+  // Dividi round da 18 buche e 9 buche
+  const rounds18 = validRounds.filter(r => r.holes.length === 18);
+  const rounds9 = validRounds.filter(r => r.holes.length === 9);
 
-    // Se 9 buche, raddoppia tutto
-    if (r.holes.length === 9) {
-      grossScore *= 2;
-      par *= 2;
-      cr *= 2;
-    }
+  // Accoppia round da 9 buche in ordine di punteggio crescente
+  rounds9.sort((a, b) => a.holes.reduce((s, h) => s + h.score, 0) - b.holes.reduce((s, h) => s + h.score, 0));
+  const paired9s = [];
+  for (let i = 0; i < rounds9.length - 1; i += 2) {
+    const first = rounds9[i];
+    const second = rounds9[i + 1];
+    paired9s.push({
+      cr: (first.cr + second.cr) / 2,
+      slope: (first.slope + second.slope) / 2,
+      score: first.holes.reduce((s, h) => s + h.score, 0) + second.holes.reduce((s, h) => s + h.score, 0),
+      totalPar: first.totalPar + second.totalPar
+    });
+  }
 
-    const differential = ((113 / slope) * (grossScore - cr));
-    differentials.push(parseFloat(differential.toFixed(1)));
-  });
+  // Concatena tutti i round da 18 buche e i round da 9 accoppiati
+  const allCombined = [
+    ...rounds18.map(r => ({
+      cr: r.cr,
+      slope: r.slope,
+      score: r.holes.reduce((s, h) => s + h.score, 0),
+      totalPar: r.totalPar
+    })),
+    ...paired9s
+  ];
+
+  // Calcola gli score differentials
+  const differentials = allCombined.map(r => (((r.score - r.totalPar) * 113) / r.slope).toFixed(1)).map(Number);
 
   if (differentials.length === 0) return null;
 
-  // Ordina e seleziona i migliori
-  differentials.sort((a, b) => a - b);
-  const count = differentials.length >= 20 ? 8 :
-                differentials.length >= 15 ? 6 :
-                differentials.length >= 10 ? 4 :
-                differentials.length >= 5 ? 2 : 1;
+  // Prendi i migliori 8 se >= 20 round, altrimenti segui WHS
+  let count = 1;
+  if (differentials.length >= 20) count = 8;
+  else if (differentials.length >= 7) count = 2;
 
-  const selected = differentials.slice(0, count);
-  const average = selected.reduce((sum, d) => sum + d, 0) / selected.length;
-  return parseFloat(average.toFixed(1));
+  const best = differentials.sort((a, b) => a - b).slice(0, count);
+  const avg = best.reduce((s, d) => s + d, 0) / count;
+
+  return parseFloat(avg.toFixed(1));
 }
