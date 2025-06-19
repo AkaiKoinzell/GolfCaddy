@@ -101,28 +101,43 @@ window.startRound = function () {
   totalHoles = parseInt(holesSelect.value);
   currentHole = 1;
   roundData.length = 0;
-
   selectedHoles = [];
+
   let cr = 0;
   let slope = 0;
   let totalPar = 0;
   let totalDistance = 0;
 
   if (totalHoles === 9 && courses[course]?.combinations9?.[combo]) {
-    const comboHoles = courses[course].combinations9[combo];
-    const matchingLayout = Object.keys(courses[course].tees).find(layoutKey =>
-      layoutKey.toLowerCase().includes(combo.toLowerCase())
-    );
-    const teeData = courses[course]?.tees[matchingLayout];
-    if (!teeData) {
-      alert("Errore nel recuperare il layout selezionato per il percorso a 9 buche.");
+    const comboHoles = courses[course]?.combinations9?.[combo];
+    if (!Array.isArray(comboHoles)) {
+      alert("Combinazione 9 buche non valida o non trovata.");
       return;
     }
-    selectedHoles = comboHoles.map(n => teeData.holes.find(h => h.number === n));
+
+    const layoutKey = Object.keys(courses[course].tees).find(layoutName =>
+      layoutName.toLowerCase().includes(combo.toLowerCase())
+    );
+    const teeData = courses[course]?.tees?.[layoutKey];
+
+    if (!teeData || !Array.isArray(teeData.holes)) {
+      alert("Layout o dati tee non validi.");
+      return;
+    }
+
+    selectedHoles = comboHoles.map(n => {
+      const hole = teeData.holes.find(h => h.number === n);
+      if (!hole) {
+        throw new Error(`Buca numero ${n} non trovata nel layout ${layoutKey}`);
+      }
+      return hole;
+    });
+
     cr = teeData?.cr;
     slope = teeData?.slope;
     totalPar = selectedHoles.reduce((sum, h) => sum + h.par, 0);
     totalDistance = selectedHoles.reduce((sum, h) => sum + h.distance, 0);
+
   } else if (totalHoles === 18 && courses[course]?.combinations18?.[combo]) {
     courses[course].combinations18[combo].forEach(({ layout, holes }) => {
       const teeData = courses[course]?.tees[layout];
@@ -141,6 +156,7 @@ window.startRound = function () {
     const count = parts.length;
     cr = parseFloat((cr / count).toFixed(1));
     slope = Math.round(slope / count);
+
   } else {
     const teeData = courses[course]?.tees[layout];
     selectedHoles = teeData?.holes.slice(0, totalHoles);
