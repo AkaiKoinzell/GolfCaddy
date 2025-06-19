@@ -108,7 +108,7 @@
       collection,
       getDocs
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { calculateHandicapIndex } from "./handicap.js";
+    import { calculateHandicap } from "./handicap.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
@@ -156,9 +156,8 @@
 
       if (rounds.length > 0) {
         renderCharts(rounds);
-        const hcp = calculateHandicapIndex(rounds);
-        document.getElementById("hcp-value").textContent = hcp !== null ? hcp : "--";
-      }
+        const hcp = calculateHandicap(rounds);
+       document.getElementById("hcp-value").textContent = (typeof hcp === "number") ? hcp.toFixed(1) : "--";      }
     }
 
     function renderCharts(rounds) {
