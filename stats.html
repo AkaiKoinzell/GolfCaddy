@@ -53,6 +53,19 @@
       padding: 0.5rem;
       text-align: center;
     }
+    #hcp-value {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #333;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
@@ -66,12 +79,9 @@
     <a href="profile.html">Profilo</a>
   </nav>
 
-   <section style="text-align:center;margin:2rem;">
+  <section style="text-align:center;margin:2rem;">
     <div style="font-size:1.2rem;font-weight:bold;">Il tuo Handicap</div>
-    <div id="hcp-value" style="width:100px;height:100px;border-radius:50%;background:#e0e0e0;
-         display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:bold;color:#333;">
-      --
-    </div>
+    <div id="hcp-value">--</div>
     <div style="margin-top:1rem;color:#555;font-size:0.9rem;">
       Calcolato come media dei migliori 8 score differential tra gli ultimi 20 round (WHS).
     </div>
@@ -104,7 +114,6 @@
     </table>
   </section>
 
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import {
@@ -129,16 +138,28 @@
 
     let allRounds = [], filters = { format: 'all', course: 'all' };
     let hcpChart, puttChart;
-    
-   async function loadStats() {
+
+    async function loadStats() {
       const snap = await getDocs(collection(db, "golf_rounds"));
       allRounds = snap.docs.map(doc => {
         const d = doc.data();
         const date = new Date(d.timestamp);
         const format = d.holes.length <= 9 ? 9 : 18;
         const score = d.holes.reduce((a,h)=>a+h.score,0);
-        const par = format === 18 ? d.totalPar : null;
-        return { id: doc.id, course: d.course, date, format, score, par, holes: d.holes, putts: d.holes.reduce((a,h)=>a+h.putts,0) };
+        const par = d.holes.reduce((a,h)=>a+(h.par || 0), 0);
+        return {
+          id: doc.id,
+          course: d.course,
+          date,
+          format,
+          score,
+          par,
+          holes: d.holes,
+          putts: d.holes.reduce((a,h)=>a+(h.putts||0),0),
+          courseRating: d.courseRating,
+          slopeRating: d.slopeRating,
+          combo: d.combo || false
+        };
       });
 
       populateCourseFilter();
@@ -167,11 +188,9 @@
         .filter(r => (filters.course==='all'||r.course === filters.course))
         .sort((a,b)=>a.date - b.date);
 
-      document.getElementById('hcp-value').textContent = (()=> {
-        const validRounds = allRounds.filter(r => r.format === 18 || r.combo);
-        const h = calculateHandicap(validRounds);
-        return typeof h==='number' ? h.toFixed(1) : '--';
-      })();
+      const validRounds = allRounds.filter(r => r.format === 18 || r.combo);
+      const h = calculateHandicap(validRounds);
+      document.getElementById('hcp-value').textContent = (typeof h === 'number') ? h.toFixed(1) : '--';
 
       drawCharts(rounds);
       drawTable(rounds);
@@ -185,7 +204,7 @@
       const tbody = document.querySelector('#rounds-table tbody');
       tbody.innerHTML = '';
       rounds.forEach(r=>{
-        const netto = r.par ? (r.score - r.par) : '';
+        const netto = (typeof r.par === 'number') ? (r.score - r.par) : '';
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${formatDate(r.date)}</td>
@@ -203,7 +222,6 @@
       const labels = rounds.map(r=>formatDate(r.date));
       const puttPct = rounds.map(r => ((r.putts/r.score)*100).toFixed(1));
 
-      // Putt chart
       if(puttChart) puttChart.destroy();
       puttChart = new Chart(document.getElementById('puttChart'),{
         type:'bar',
@@ -211,12 +229,8 @@
         options:{ scales:{ y:{ beginAtZero:true, max:100 }}}
       });
 
-      // Handicap chart
       if(hcpChart) hcpChart.destroy();
-      const diffs = rounds.map(r=>{
-        if(r.par) return (r.score - r.par);
-        return null;
-      });
+      const diffs = rounds.map(r=>r.par ? (r.score - r.par) : null);
       hcpChart = new Chart(document.getElementById('hcpChart'),{
         type:'line',
         data:{ labels, datasets:[{ label:'Netto', data:diffs, borderColor:'#006400', fill:false }]},
