@@ -156,8 +156,8 @@
           par,
           holes: d.holes,
           putts: d.holes.reduce((a,h)=>a+(h.putts||0),0),
-          courseRating: d.courseRating,
-          slopeRating: d.slopeRating,
+          courseRating: d.cr,
+          slopeRating: d.slope,
           combo: d.combo || false
         };
       });
@@ -192,11 +192,11 @@
   const validForHCP = allRounds
     .filter(r =>
       (r.format === 18 || r.combo) &&
-      r.courseRating && r.slopeRating && r.par && r.holes.length >= 9
+      r.cr && r.slope && r.par && r.holes.length >= 9
     )
     .map(r => ({
-      cr: r.courseRating,
-      slope: r.slopeRating,
+      cr: r.cr,
+      slope: r.slope,
       totalPar: r.par,
       totalDistance: r.totalDistance || 6000,  // default se assente
       holes: r.holes
