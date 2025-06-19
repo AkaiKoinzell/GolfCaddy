@@ -191,16 +191,16 @@
   // 🔁 Conversione round per compatibilità con handicap.js
   const validForHCP = allRounds
     .filter(r =>
-      (r.format === 18 || r.combo) &&
-      r.cr && r.slope && r.par && r.holes.length >= 9
-    )
-    .map(r => ({
-      cr: r.cr,
-      slope: r.slope,
-      totalPar: r.par,
-      totalDistance: r.totalDistance || 6000,  // default se assente
-      holes: r.holes
-    }));
+  (r.format === 18 || r.combo) &&
+  r.courseRating && r.slopeRating && r.par && r.holes.length >= 9
+)
+.map(r => ({
+  cr: r.courseRating,
+  slope: r.slopeRating,
+  totalPar: r.par,
+  totalDistance: r.totalDistance || 6000,
+  holes: r.holes
+}));
 
   // 🧮 Calcolo Handicap
   const h = calculateHandicap(validForHCP);
