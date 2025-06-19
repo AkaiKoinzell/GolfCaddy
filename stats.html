@@ -66,42 +66,44 @@
     <a href="profile.html">Profilo</a>
   </nav>
 
-  <div style="display: flex; flex-direction: column; align-items: center; font-family: sans-serif; margin-top: 2rem;">
-    <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">Il tuo Handicap</div>
-    <div id="hcp-value" style="width: 100px; height: 100px; border-radius: 50%; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #333;">
+   <section style="text-align:center;margin:2rem;">
+    <div style="font-size:1.2rem;font-weight:bold;">Il tuo Handicap</div>
+    <div id="hcp-value" style="width:100px;height:100px;border-radius:50%;background:#e0e0e0;
+         display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:bold;color:#333;">
       --
     </div>
-    <div style="margin-top: 1rem; max-width: 400px; text-align: center; color: #555; font-size: 0.9rem;">
-      Calcolato come media dei migliori 8 score differential tra i tuoi ultimi 20 round giocati, come da regolamento WHS (World Handicap System).
+    <div style="margin-top:1rem;color:#555;font-size:0.9rem;">
+      Calcolato come media dei migliori 8 score differential tra gli ultimi 20 round (WHS).
     </div>
-  </div>
+  </section>
 
-  <div class="chart-container">
-    <h2>Andamento Punteggi</h2>
-    <canvas id="scoreChart"></canvas>
-  </div>
+  <section style="max-width:800px;margin:2rem auto;">
+    <label>Filtra:
+      <select id="filter-format">
+        <option value="all">Tutti</option>
+        <option value="9">9 buche</option>
+        <option value="18">18 buche</option>
+      </select>
+      <select id="filter-course">
+        <option value="all">Tutti i campi</option>
+      </select>
+    </label>
+  </section>
 
-  <div class="chart-container">
-    <h2>Percentuale Putt sui Colpi Totali</h2>
-    <canvas id="puttChart"></canvas>
-  </div>
+  <aside class="chart-container"><h2>Handicap nel tempo</h2><canvas id="hcpChart"></canvas></aside>
+  <aside class="chart-container"><h2>% Putt sui colpi totali</h2><canvas id="puttChart"></canvas></aside>
 
-  <div class="chart-container">
-    <h2>Storico Round</h2>
+  <section class="chart-container"><h2>Storico Round</h2>
     <table id="rounds-table">
       <thead>
         <tr>
-          <th>Data</th>
-          <th>Campo</th>
-          <th>Buche</th>
-          <th>Punteggio</th>
-          <th>Vs Par</th>
-          <th>Dettagli</th>
+          <th>Data</th><th>Campo</th><th>Format</th><th>Punteggio</th><th>Netto</th><th>Dettagli</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
-  </div>
+  </section>
+
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -125,81 +127,99 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function loadStats() {
-      const snapshot = await getDocs(collection(db, "golf_rounds"));
-      const rounds = [];
-      const tbody = document.querySelector("#rounds-table tbody");
-      tbody.innerHTML = "";
+    let allRounds = [], filters = { format: 'all', course: 'all' };
+    let hcpChart, puttChart;
+    
+   async function loadStats() {
+      const snap = await getDocs(collection(db, "golf_rounds"));
+      allRounds = snap.docs.map(doc => {
+        const d = doc.data();
+        const date = new Date(d.timestamp);
+        const format = d.holes.length <= 9 ? 9 : 18;
+        const score = d.holes.reduce((a,h)=>a+h.score,0);
+        const par = format === 18 ? d.totalPar : null;
+        return { id: doc.id, course: d.course, date, format, score, par, holes: d.holes, putts: d.holes.reduce((a,h)=>a+h.putts,0) };
+      });
 
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        const date = new Date(data.timestamp);
-        const totalScore = data.holes.reduce((s, h) => s + h.score, 0);
-        const totalPutts = data.holes.reduce((s, h) => s + h.putts, 0);
-        const totalPar = data.totalPar || data.holes.reduce((s, h) => s + h.par, 0);
-        const holesPlayed = data.holes.length;
+      populateCourseFilter();
+      updateDisplay();
+    }
 
-        rounds.push({
-          date,
-          score: totalScore,
-          putts: totalPutts,
-          totalStrokes: totalScore,
-          course: data.course,
-          id: doc.id,
-          totalPar,
-          holesPlayed,
-          ...data
+    function populateCourseFilter(){
+      const sel = document.getElementById('filter-course');
+      const courses = [...new Set(allRounds.map(r=>r.course))];
+      courses.forEach(c=>{
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        sel.appendChild(opt);
+      });
+      [ 'filter-format','filter-course' ].forEach(id=> {
+        document.getElementById(id).addEventListener('change',e=>{
+          filters[id==='filter-format'?'format':'course']=e.target.value;
+          updateDisplay();
         });
+      });
+    }
 
-        const tr = document.createElement("tr");
+    function updateDisplay() {
+      const rounds = allRounds
+        .filter(r => (filters.format==='all'||r.format == filters.format))
+        .filter(r => (filters.course==='all'||r.course === filters.course))
+        .sort((a,b)=>a.date - b.date);
+
+      document.getElementById('hcp-value').textContent = (()=> {
+        const h = calculateHandicapIndex(allRounds);
+        return typeof h==='number' ? h.toFixed(1) : '--';
+      })();
+
+      drawCharts(rounds);
+      drawTable(rounds);
+    }
+
+    function formatDate(d){
+      return d.toLocaleDateString('it-IT');
+    }
+
+    function drawTable(rounds) {
+      const tbody = document.querySelector('#rounds-table tbody');
+      tbody.innerHTML = '';
+      rounds.forEach(r=>{
+        const netto = r.par ? (r.score - r.par) : '';
+        const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${date.toLocaleDateString('it-IT')}</td>
-          <td>${data.course}</td>
-          <td>${holesPlayed}</td>
-          <td>${totalScore}</td>
-          <td>${totalScore - totalPar > 0 ? "+" : ""}${totalScore - totalPar}</td>
-          <td><a href="round.html?id=${doc.id}">Dettagli</a></td>
+          <td>${formatDate(r.date)}</td>
+          <td>${r.course}</td>
+          <td>${r.format} buche</td>
+          <td>${r.score}</td>
+          <td>${netto>=0? '+'+netto: netto}</td>
+          <td><a href="round.html?id=${r.id}">Dettagli</a></td>
         `;
         tbody.appendChild(tr);
       });
-
-      if (rounds.length > 0) {
-        renderCharts(rounds);
-        const hcp = calculateHandicap(rounds);
-        document.getElementById("hcp-value").textContent = (typeof hcp === "number") ? hcp.toFixed(1) : "--";
-      }
     }
 
-    function renderCharts(rounds) {
-      const filtered = rounds.filter(r => r.holesPlayed === 18 || r.combo); // solo validi per grafico
+    function drawCharts(rounds) {
+      const labels = rounds.map(r=>formatDate(r.date));
+      const puttPct = rounds.map(r => ((r.putts/r.score)*100).toFixed(1));
 
-      const labels = filtered.map(r => r.date.toLocaleDateString('it-IT'));
-      const scores = filtered.map(r => r.score);
-      const puttPercent = filtered.map(r => ((r.putts / r.totalStrokes) * 100).toFixed(1));
-
-      new Chart(document.getElementById("scoreChart"), {
-        type: "line",
-        data: {
-          labels,
-          datasets: [{
-            label: "Punteggio",
-            data: scores,
-            borderColor: "#006400",
-            fill: false
-          }]
-        }
+      // Putt chart
+      if(puttChart) puttChart.destroy();
+      puttChart = new Chart(document.getElementById('puttChart'),{
+        type:'bar',
+        data:{ labels, datasets:[{ label:'% Putt', data:puttPct, backgroundColor:'#32CD32' }]},
+        options:{ scales:{ y:{ beginAtZero:true, max:100 }}}
       });
 
-      new Chart(document.getElementById("puttChart"), {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [{
-            label: "% Putt",
-            data: puttPercent,
-            backgroundColor: "#32CD32"
-          }]
-        }
+      // Handicap chart
+      if(hcpChart) hcpChart.destroy();
+      const diffs = rounds.map(r=>{
+        if(r.par) return (r.score - r.par);
+        return null;
+      });
+      hcpChart = new Chart(document.getElementById('hcpChart'),{
+        type:'line',
+        data:{ labels, datasets:[{ label:'Netto', data:diffs, borderColor:'#006400', fill:false }]},
+        options:{ plugins:{ tooltip:{ callbacks:{ label:ctx=>`Netto ${ctx.formattedValue}` }}}}
       });
     }
 
