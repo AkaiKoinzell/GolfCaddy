@@ -90,7 +90,7 @@ export const courses = {
     }
   },
 
-  "Glf Resort Kremstal (AT)": {
+  "Golf Resort Kremstal (AT)": {
     tees: {
       "Giallo": {
         cr: null,
@@ -134,7 +134,7 @@ export const courses = {
         ]
       },
       "Giallo - C - Cherndlgutkurs": {
-        cr: 68,1,
+        cr: 68.1,
         slope: 121,
         par: 35,
         totalDistance: 2568,
@@ -156,7 +156,7 @@ export const courses = {
         layout: "Giallo - A - Bergergutkurs",
         holes: [1, 2, 3, 4, 5, 6, 7, 8, 9]
       },
-      "Giallo - B - Panoramakurs": {
+      "B - Panoramakurs": {
         layout: "Giallo - B - Panoramakurs",
         holes: [1, 2, 3, 4, 5, 6, 7, 8, 9]
       },
