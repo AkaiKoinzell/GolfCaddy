@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -93,7 +93,9 @@
         <tr>
           <th>Data</th>
           <th>Campo</th>
+          <th>Buche</th>
           <th>Punteggio</th>
+          <th>Vs Par</th>
           <th>Dettagli</th>
         </tr>
       </thead>
@@ -131,24 +133,31 @@
 
       snapshot.docs.forEach(doc => {
         const data = doc.data();
+        const date = new Date(data.timestamp);
         const totalScore = data.holes.reduce((s, h) => s + h.score, 0);
         const totalPutts = data.holes.reduce((s, h) => s + h.putts, 0);
+        const totalPar = data.totalPar || data.holes.reduce((s, h) => s + h.par, 0);
+        const holesPlayed = data.holes.length;
 
         rounds.push({
-          date: new Date(data.timestamp),
+          date,
           score: totalScore,
           putts: totalPutts,
           totalStrokes: totalScore,
           course: data.course,
           id: doc.id,
-          ...data // include cr, slope, par, holes per il calcolo handicap
+          totalPar,
+          holesPlayed,
+          ...data
         });
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${new Date(data.timestamp).toLocaleDateString()}</td>
+          <td>${date.toLocaleDateString('it-IT')}</td>
           <td>${data.course}</td>
+          <td>${holesPlayed}</td>
           <td>${totalScore}</td>
+          <td>${totalScore - totalPar > 0 ? "+" : ""}${totalScore - totalPar}</td>
           <td><a href="round.html?id=${doc.id}">Dettagli</a></td>
         `;
         tbody.appendChild(tr);
@@ -157,18 +166,21 @@
       if (rounds.length > 0) {
         renderCharts(rounds);
         const hcp = calculateHandicap(rounds);
-       document.getElementById("hcp-value").textContent = (typeof hcp === "number") ? hcp.toFixed(1) : "--";      }
+        document.getElementById("hcp-value").textContent = (typeof hcp === "number") ? hcp.toFixed(1) : "--";
+      }
     }
 
     function renderCharts(rounds) {
-      const labels = rounds.map(r => r.date.toLocaleDateString());
-      const scores = rounds.map(r => r.score);
-      const puttPercent = rounds.map(r => ((r.putts / r.totalStrokes) * 100).toFixed(1));
+      const filtered = rounds.filter(r => r.holesPlayed === 18 || r.combo); // solo validi per grafico
+
+      const labels = filtered.map(r => r.date.toLocaleDateString('it-IT'));
+      const scores = filtered.map(r => r.score);
+      const puttPercent = filtered.map(r => ((r.putts / r.totalStrokes) * 100).toFixed(1));
 
       new Chart(document.getElementById("scoreChart"), {
         type: "line",
         data: {
-          labels: labels,
+          labels,
           datasets: [{
             label: "Punteggio",
             data: scores,
@@ -181,7 +193,7 @@
       new Chart(document.getElementById("puttChart"), {
         type: "bar",
         data: {
-          labels: labels,
+          labels,
           datasets: [{
             label: "% Putt",
             data: puttPercent,
