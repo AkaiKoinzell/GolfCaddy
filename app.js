@@ -3,7 +3,8 @@ import {
   getFirestore,
   collection,
   addDoc,
-  getAuth
+  getAuth,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { courses } from "./courses.js";
 
@@ -20,12 +21,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
-
+let uid = null;
 let currentHole = 1;
 let totalHoles = 9;
 let selectedHoles = [];
 const roundData = [];
-const uid = auth.currentUser?.uid;
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    uid = user.uid;
+  }
+});
 
 window.populateCourseOptions = function () {
   const courseInput = document.getElementById("course");
@@ -91,7 +97,7 @@ window.saveHole = async function () {
         totalDistance,
         notes: document.getElementById("notes").value,
         holes: roundData,
-        uid: uid || null,
+        uid: uid
       });
 
       localStorage.setItem("roundSaved", "true"); // flag per evitare duplicati
