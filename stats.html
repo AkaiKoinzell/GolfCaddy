@@ -155,34 +155,33 @@
     let allRounds = [], filters = { format: 'all', course: 'all' };
     let hcpChart, puttChart;
 
-    async function loadStats() {
-      const snap = await getDocs(collection(db, "golf_rounds"));
-      const q = query(collection(db, "golf_rounds"), where("uid", "==", uid));
-      const snap = await getDocs(q);
-      allRounds = snap.docs.map(doc => {
-        const d = doc.data();
-        const date = new Date(d.timestamp);
-        const format = d.holes.length <= 9 ? 9 : 18;
-        const score = d.holes.reduce((a,h)=>a+h.score,0);
-        const par = d.holes.reduce((a,h)=>a+(h.par || 0), 0);
-        return {
-          id: doc.id,
-          course: d.course,
-          date,
-          format,
-          score,
-          par,
-          holes: d.holes,
-          putts: d.holes.reduce((a,h)=>a+(h.putts||0),0),
-          courseRating: d.cr,
-          slopeRating: d.slope,
-          combo: d.combo || false
-        };
-      });
+   async function loadStats() {
+  const q = query(collection(db, "golf_rounds"), where("uid", "==", uid));
+  const snap = await getDocs(q);
+  allRounds = snap.docs.map(doc => {
+    const d = doc.data();
+    const date = new Date(d.timestamp || d.date || doc.id); // fallback per timestamp
+    const format = d.holes.length <= 9 ? 9 : 18;
+    const score = d.holes.reduce((a,h)=>a+h.score,0);
+    const par = d.holes.reduce((a,h)=>a+(h.par || 0), 0);
+    return {
+      id: doc.id,
+      course: d.course,
+      date,
+      format,
+      score,
+      par,
+      holes: d.holes,
+      putts: d.holes.reduce((a,h)=>a+(h.putts||0),0),
+      courseRating: d.cr,
+      slopeRating: d.slope,
+      combo: d.combo || false
+    };
+  });
 
-      populateCourseFilter();
-      updateDisplay();
-    }
+  populateCourseFilter();
+  updateDisplay();
+}
 
     function populateCourseFilter(){
       const sel = document.getElementById('filter-course');
