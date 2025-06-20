@@ -230,53 +230,46 @@
       });
     }
 
-    function drawCharts(rounds, validRounds) {
-    const labels = rounds.map(r => formatDate(r.date));
-    const puttPct = rounds.map(r => ((r.putts / r.score) * 100).toFixed(1));
+   function drawCharts(rounds, validRounds) {
+      const labels = rounds.map(r => formatDate(r.date));
+      const puttPct = rounds.map(r => ((r.putts / r.score) * 100).toFixed(1));
 
-    if (puttChart) puttChart.destroy();
-    puttChart = new Chart(document.getElementById('puttChart'), {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{ label: '% Putt', data: puttPct, backgroundColor: '#32CD32' }]
-      },
-      options: { scales: { y: { beginAtZero: true, max: 100 } } }
-    });
+      if (puttChart) puttChart.destroy();
+      puttChart = new Chart(document.getElementById('puttChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: '% Putt', data: puttPct, backgroundColor: '#32CD32' }]
+        },
+        options: { scales: { y: { beginAtZero: true, max: 100 } } }
+      });
 
-    if (hcpChart) hcpChart.destroy();
+      if (hcpChart) hcpChart.destroy();
+      const allLabels = rounds.map(r => formatDate(r.date));
+      const data18 = rounds.map(r => r.format === 18 ? r.score - r.par : null);
+      const data9 = rounds.map(r => r.format === 9 ? r.score - r.par : null);
 
-    const labels18 = rounds.filter(r => r.format === 18).map(r => formatDate(r.date));
-    const diffs18 = rounds.filter(r => r.format === 18).map(r => r.score - r.par);
-    const labels9 = rounds.filter(r => r.format === 9).map(r => formatDate(r.date));
-    const diffs9 = rounds.filter(r => r.format === 9).map(r => r.score - r.par);
-    const validLabels = validRounds.map(r => formatDate(r.date));
-    const validDiffs = validRounds.map(r => r.score - r.par);
+      const hcpData = allLabels.map(label => {
+        const match = validRounds.find(r => formatDate(r.date) === label);
+        return match ? ((match.holes.reduce((s, h) => s + h.score, 0) - match.totalPar)) : null;
+      });
 
-    const allLabels = [...new Set([...labels18, ...labels9, ...validLabels])];
-
-    hcpChart = new Chart(document.getElementById('hcpChart'), {
-      type: 'line',
-      data: {
-        labels: allLabels,
-        datasets: [
-          { label: '18 buche', data: labels18.map((d, i) => diffs18[i]), borderColor: '#006400', fill: false },
-          { label: '9 buche', data: labels9.map((d, i) => diffs9[i]), borderColor: '#32CD32', fill: false },
-          { label: 'Valido per Handicap', data: validLabels.map((d, i) => validDiffs[i]), borderColor: '#FFA500', fill: false }
-        ]
-      },
-      options: {
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: ctx => `Netto ${ctx.formattedValue}`
-            }
-          }
+      hcpChart = new Chart(document.getElementById('hcpChart'), {
+        type: 'bar',
+        data: {
+          labels: allLabels,
+          datasets: [
+            { label: '18 buche', data: data18, backgroundColor: '#006400' },
+            { label: '9 buche', data: data9, backgroundColor: '#32CD32' },
+            { label: 'Valido per Handicap', type: 'line', data: hcpData, borderColor: '#FFA500', borderWidth: 2, fill: false, tension: 0.3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } }
         }
-      }
-    });
-  }
-
+      });
+    }
     loadStats();
   </script>
 </body>
