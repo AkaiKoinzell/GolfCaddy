@@ -132,7 +132,9 @@
     import {
       getFirestore,
       collection,
-      getDocs
+      getDocs,
+      query,
+      where
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { calculateHandicap } from "./handicap.js";
 
@@ -148,12 +150,15 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const uid = localStorage.getItem("uid");
 
     let allRounds = [], filters = { format: 'all', course: 'all' };
     let hcpChart, puttChart;
 
     async function loadStats() {
       const snap = await getDocs(collection(db, "golf_rounds"));
+      const q = query(collection(db, "golf_rounds"), where("uid", "==", uid));
+      const snap = await getDocs(q);
       allRounds = snap.docs.map(doc => {
         const d = doc.data();
         const date = new Date(d.timestamp);
