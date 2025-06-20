@@ -22,6 +22,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
 let uid = null;
+let userDisplayName = null;
+let userEmail = null;
 let currentHole = 1;
 let totalHoles = 9;
 let selectedHoles = [];
@@ -30,6 +32,14 @@ const roundData = [];
 onAuthStateChanged(auth, (user) => {
   if (user) {
     uid = user.uid;
+    userDisplayName = user.displayName;
+    userEmail = user.email;
+
+    // Auto-riempi il campo player se è vuoto
+    const playerInput = document.getElementById("player");
+    if (playerInput && !playerInput.value) {
+      playerInput.value = userDisplayName || userEmail || "Giocatore";
+    }
   }
 });
 
@@ -186,10 +196,12 @@ window.startRound = function () {
   const player = document.getElementById("player").value;
   const combo = document.getElementById("combo9")?.value;
 
-  if (!course || !player) {
-    alert("Inserisci il tuo nome, seleziona un campo per iniziare il round.");
-    return;
-  }
+  if (!course) {
+  alert("Seleziona un campo per iniziare il round.");
+  return;
+}
+
+const playerName = player || userDisplayName || userEmail || "Giocatore";
 
   totalHoles = parseInt(holesSelect.value);
   currentHole = 1;
@@ -259,7 +271,7 @@ window.startRound = function () {
     totalDistance = selectedHoles.reduce((sum, h) => sum + h.distance, 0);
   }
 
-  window._roundMeta = { course, layout, player, combo, cr, slope, totalPar, totalDistance };
+  window._roundMeta = { course, layout, player: playerName, combo, cr, slope, totalPar, totalDistance };
 
   document.getElementById("start-round").style.display = "none";
   document.getElementById("hole-input").style.display = "block";
