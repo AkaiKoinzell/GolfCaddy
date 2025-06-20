@@ -183,32 +183,30 @@
     }
 
  function updateDisplay() {
-  const rounds = allRounds
-    .filter(r => (filters.format === 'all' || r.format === parseInt(filters.format)))
-    .filter(r => (filters.course === 'all' || r.course === filters.course))
-    .sort((a, b) => a.date - b.date);
+    const rounds = allRounds
+      .filter(r => (filters.format === 'all' || r.format === parseInt(filters.format)))
+      .filter(r => (filters.course === 'all' || r.course === filters.course))
+      .sort((a, b) => a.date - b.date);
 
-  // 🔁 Conversione round per compatibilità con handicap.js
-  const validForHCP = allRounds
-    .filter(r =>
-  (r.format === 18 || r.combo) &&
-  r.courseRating && r.slopeRating && r.par && r.holes.length >= 9
-)
-.map(r => ({
-  cr: r.courseRating,
-  slope: r.slopeRating,
-  totalPar: r.par,
-  totalDistance: r.totalDistance || 6000,
-  holes: r.holes
-}));
+    const validForHCP = allRounds
+      .filter(r => (r.format === 18 || r.combo) && r.courseRating && r.slopeRating)
+      .map(r => ({
+        cr: r.courseRating,
+        slope: r.slopeRating,
+        totalPar: r.par,
+        totalDistance: r.totalDistance || 6000,
+        holes: r.holes,
+        date: r.date,
+        score: r.score,
+        par: r.par
+      }));
 
-  // 🧮 Calcolo Handicap
-  const h = calculateHandicap(validForHCP);
-  document.getElementById('hcp-value').textContent = (typeof h === 'number') ? h.toFixed(1) : '--';
+    const h = calculateHandicap(validForHCP);
+    document.getElementById('hcp-value').textContent = (typeof h === 'number') ? h.toFixed(1) : '--';
 
-  drawCharts(rounds);
-  drawTable(rounds);
-}
+    drawTable(rounds);
+    drawCharts(rounds, validForHCP);
+  }
     
     function formatDate(d){
       return d.toLocaleDateString('it-IT');
@@ -217,7 +215,7 @@
     function drawTable(rounds) {
       const tbody = document.querySelector('#rounds-table tbody');
       tbody.innerHTML = '';
-      rounds.forEach(r=>{
+      rounds.forEach(r => {
         const netto = (typeof r.par === 'number') ? (r.score - r.par) : '';
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -233,37 +231,51 @@
     }
 
     function drawCharts(rounds, validRounds) {
-      const labels = rounds.map(r=>formatDate(r.date));
-      const puttPct = rounds.map(r => ((r.putts/r.score)*100).toFixed(1));
+    const labels = rounds.map(r => formatDate(r.date));
+    const puttPct = rounds.map(r => ((r.putts / r.score) * 100).toFixed(1));
 
-      if(puttChart) puttChart.destroy();
-      puttChart = new Chart(document.getElementById('puttChart'),{
-        type:'bar',
-        data:{ labels, datasets:[{ label:'% Putt', data:puttPct, backgroundColor:'#32CD32' }]},
-        options:{ scales:{ y:{ beginAtZero:true, max:100 }}}
-      });
+    if (puttChart) puttChart.destroy();
+    puttChart = new Chart(document.getElementById('puttChart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ label: '% Putt', data: puttPct, backgroundColor: '#32CD32' }]
+      },
+      options: { scales: { y: { beginAtZero: true, max: 100 } } }
+    });
 
-      if(hcpChart) hcpChart.destroy();
-      const labels18 = rounds.filter(r=>r.format===18).map(r=>formatDate(r.date));
-      const diffs18 = rounds.filter(r=>r.format===18).map(r=>r.score - r.par);
-      const labels9 = rounds.filter(r=>r.format===9).map(r=>formatDate(r.date));
-      const diffs9 = rounds.filter(r=>r.format===9).map(r=>r.score - r.par);
-      const validLabels = validRounds.map(r=>formatDate(r.date));
-      const validDiffs = validRounds.map(r=>r.score - r.par);
+    if (hcpChart) hcpChart.destroy();
 
-      hcpChart = new Chart(document.getElementById('hcpChart'),{
-        type:'line',
-        data:{
-          labels: [...new Set([...labels18, ...labels9, ...validLabels])],
-          datasets:[
-            { label:'18 buche', data: diffs18, borderColor:'#006400', fill:false },
-            { label:'9 buche', data: diffs9, borderColor:'#32CD32', fill:false },
-            { label:'Valido per Handicap', data: validDiffs, borderColor:'#FFA500', fill:false }
-          ]
-        },
-        options:{ plugins:{ tooltip:{ callbacks:{ label:ctx=>`Netto ${ctx.formattedValue}` }}}}
-      });
-    }
+    const labels18 = rounds.filter(r => r.format === 18).map(r => formatDate(r.date));
+    const diffs18 = rounds.filter(r => r.format === 18).map(r => r.score - r.par);
+    const labels9 = rounds.filter(r => r.format === 9).map(r => formatDate(r.date));
+    const diffs9 = rounds.filter(r => r.format === 9).map(r => r.score - r.par);
+    const validLabels = validRounds.map(r => formatDate(r.date));
+    const validDiffs = validRounds.map(r => r.score - r.par);
+
+    const allLabels = [...new Set([...labels18, ...labels9, ...validLabels])];
+
+    hcpChart = new Chart(document.getElementById('hcpChart'), {
+      type: 'line',
+      data: {
+        labels: allLabels,
+        datasets: [
+          { label: '18 buche', data: labels18.map((d, i) => diffs18[i]), borderColor: '#006400', fill: false },
+          { label: '9 buche', data: labels9.map((d, i) => diffs9[i]), borderColor: '#32CD32', fill: false },
+          { label: 'Valido per Handicap', data: validLabels.map((d, i) => validDiffs[i]), borderColor: '#FFA500', fill: false }
+        ]
+      },
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => `Netto ${ctx.formattedValue}`
+            }
+          }
+        }
+      }
+    });
+  }
 
     loadStats();
   </script>
