@@ -232,7 +232,7 @@
       });
     }
 
-    function drawCharts(rounds) {
+    function drawCharts(rounds, validRounds) {
       const labels = rounds.map(r=>formatDate(r.date));
       const puttPct = rounds.map(r => ((r.putts/r.score)*100).toFixed(1));
 
@@ -244,10 +244,23 @@
       });
 
       if(hcpChart) hcpChart.destroy();
-      const diffs = rounds.map(r=>r.par ? (r.score - r.par) : null);
+      const labels18 = rounds.filter(r=>r.format===18).map(r=>formatDate(r.date));
+      const diffs18 = rounds.filter(r=>r.format===18).map(r=>r.score - r.par);
+      const labels9 = rounds.filter(r=>r.format===9).map(r=>formatDate(r.date));
+      const diffs9 = rounds.filter(r=>r.format===9).map(r=>r.score - r.par);
+      const validLabels = validRounds.map(r=>formatDate(r.date));
+      const validDiffs = validRounds.map(r=>r.score - r.par);
+
       hcpChart = new Chart(document.getElementById('hcpChart'),{
         type:'line',
-        data:{ labels, datasets:[{ label:'Netto', data:diffs, borderColor:'#006400', fill:false }]},
+        data:{
+          labels: [...new Set([...labels18, ...labels9, ...validLabels])],
+          datasets:[
+            { label:'18 buche', data: diffs18, borderColor:'#006400', fill:false },
+            { label:'9 buche', data: diffs9, borderColor:'#32CD32', fill:false },
+            { label:'Valido per Handicap', data: validDiffs, borderColor:'#FFA500', fill:false }
+          ]
+        },
         options:{ plugins:{ tooltip:{ callbacks:{ label:ctx=>`Netto ${ctx.formattedValue}` }}}}
       });
     }
