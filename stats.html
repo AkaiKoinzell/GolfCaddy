@@ -101,6 +101,15 @@
   </section>
 
   <aside class="chart-container"><h2>Handicap nel tempo</h2><canvas id="hcpChart"></canvas></aside>
+  <section class="chart-container">
+    <h2>Media Colpi per Tipo di Buca</h2>
+    <table id="par-average-table">
+      <thead>
+        <tr><th>Par</th><th>Media Colpi</th><th>Media Putt</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
   <aside class="chart-container"><h2>% Putt sui colpi totali</h2><canvas id="puttChart"></canvas></aside>
 
   <section class="chart-container"><h2>Storico Round</h2>
@@ -229,7 +238,25 @@
         tbody.appendChild(tr);
       });
     }
-
+function drawParAverages(rounds) {
+      const totals = { 3: { shots: 0, putts: 0, count: 0 }, 4: { shots: 0, putts: 0, count: 0 }, 5: { shots: 0, putts: 0, count: 0 } };
+      rounds.forEach(r => {
+        r.holes.forEach(h => {
+          if (totals[h.par]) {
+            totals[h.par].shots += h.score;
+            totals[h.par].putts += h.putts;
+            totals[h.par].count++;
+          }
+        });
+      });
+      const tbody = document.querySelector('#par-average-table tbody');
+      tbody.innerHTML = '';
+      [3,4,5].forEach(p => {
+        const row = `<tr><td>Par ${p}</td><td>${(totals[p].shots / totals[p].count || 0).toFixed(2)}</td><td>${(totals[p].putts / totals[p].count || 0).toFixed(2)}</td></tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+    
    function drawCharts(rounds, validRounds) {
       const labels = rounds.map(r => formatDate(r.date));
       const puttPct = rounds.map(r => ((r.putts / r.score) * 100).toFixed(1));
