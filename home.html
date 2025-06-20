@@ -77,11 +77,17 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import {
       getAuth,
-      signInWithPopup,
       GoogleAuthProvider,
-      signOut,
-      onAuthStateChanged
+      signInWithPopup,
+      onAuthStateChanged,
+      signOut
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
@@ -95,6 +101,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
     const loginBtn = document.getElementById("login-btn");
@@ -105,7 +112,7 @@
     loginBtn.addEventListener("click", () => signInWithPopup(auth, provider));
     logoutBtn.addEventListener("click", () => signOut(auth));
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         localStorage.setItem("uid", user.uid);
         localStorage.setItem("userName", user.displayName || "");
@@ -114,6 +121,19 @@
         logoutBtn.style.display = "inline";
         userInfo.style.display = "inline";
         navLinks.style.display = "flex";
+
+        // 🔒 Salva l'utente in Firestore se non esiste
+        const userRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userRef);
+        if (!docSnap.exists()) {
+          await setDoc(userRef, {
+            name: user.displayName || "",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+            registeredAt: new Date().toISOString(),
+            officialHandicap: null
+          });
+        }
       } else {
         localStorage.removeItem("uid");
         localStorage.removeItem("userName");
