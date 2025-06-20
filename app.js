@@ -2,11 +2,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import {
   getFirestore,
   collection,
-  addDoc,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import {
   getAuth,
   onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { courses } from "./courses.js";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
