@@ -70,6 +70,62 @@ async function loadClubData() {
   }
 }
 
+function saveClubShot() {
+  const club = document.getElementById("club-select").value;
+  const distance = parseFloat(document.getElementById("distance-input").value);
+  const notes = document.getElementById("notes-input").value;
+
+  if (!club || isNaN(distance)) {
+    alert("Inserisci un bastone e una distanza valida.");
+    return;
+  }
+
+  const existing = JSON.parse(localStorage.getItem("clubStats") || "{}");
+
+  if (!existing[club]) {
+    existing[club] = { count: 0, totalDistance: 0, min: distance, max: distance, notes: [] };
+  }
+
+  const stat = existing[club];
+  stat.count++;
+  stat.totalDistance += distance;
+  stat.min = Math.min(stat.min, distance);
+  stat.max = Math.max(stat.max, distance);
+  if (notes) stat.notes.push(notes);
+
+  localStorage.setItem("clubStats", JSON.stringify(existing));
+  alert("Colpo salvato!");
+
+  renderClubStats(); // aggiorna la UI
+}
+
+function renderClubStats() {
+  const stats = JSON.parse(localStorage.getItem("clubStats") || "{}");
+  const container = document.getElementById("club-stats");
+  container.innerHTML = "";
+
+  const keys = Object.keys(stats);
+  if (keys.length === 0) {
+    container.innerHTML = "<p>Nessun dato disponibile.</p>";
+    return;
+  }
+
+  keys.forEach(club => {
+    const stat = stats[club];
+    const avg = stat.totalDistance / stat.count;
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <h3>${club}</h3>
+      <p>Colpi registrati: ${stat.count}</p>
+      <p>Distanza media: ${avg.toFixed(1)} m</p>
+      <p>Distanza minima: ${stat.min} m</p>
+      <p>Distanza massima: ${stat.max} m</p>
+    `;
+    container.appendChild(div);
+  });
+}
+
+renderClubStats();
 window.saveClubShot = async function () {
   const club = document.getElementById("club-select").value;
   const distance = parseInt(document.getElementById("distance-input").value);
@@ -92,4 +148,3 @@ window.saveClubShot = async function () {
     alert("Errore nel salvataggio: " + error.message);
   }
 }
-
