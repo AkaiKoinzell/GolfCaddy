@@ -224,11 +224,25 @@
     };
   });
 
+  await loadClubShots();
   populateCourseFilter();
   updateDisplay();
   //renderClubStats();
  // renderClubDistanceChart();
 }
+
+  async function loadClubShots(){
+    const qShots = query(collection(db, "club_shots"), where("uid", "==", uid));
+    const snapShots = await getDocs(qShots);
+    allShots = snapShots.docs.map(doc => {
+      const data = doc.data();
+      return {
+        club: data.club,
+        distance: data.distance,
+        date: data.timestamp?.toDate ? data.timestamp.toDate() : new Date()
+      };
+    });
+  }
 
     function populateCourseFilter(){
       const sel = document.getElementById('filter-course');
@@ -315,30 +329,91 @@ function drawParAverages(rounds) {
     }
 
     function drawClubStats(rounds){
-  const stats = {};
-  rounds.forEach(r=>{
-    const date = formatDate(r.date);
-    r.holes.forEach(h=>{
-      const club = h.club || 'Altro';
-      const key = `${date}__${club}`;
-      if (!(key in stats)) {
-        stats[key] = { date, club, totalShots:0, uses:0 };
-      }
-      stats[key].totalShots += h.score;
-      stats[key].uses += 1;
-    });
-  });
-  const tbody = document.querySelector('#club-shots-table tbody');
-  tbody.innerHTML = '';
-  Object.values(stats)
-    .sort((a,b)=>new Date(a.date) - new Date(b.date) || a.club.localeCompare(b.club))
-    .forEach(s=>{
-      const avg = (s.totalShots / s.uses).toFixed(2);
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${s.date}</td><td>${s.club}</td><td>${s.totalShots}</td><td>${s.uses}</td><td>${avg}</td>`;
-      tbody.appendChild(tr);
-    });
-}
+      const aggregate = {};
+
+      // manual shots
+      allShots.forEach(s => {
+        const club = s.club || 'Altro';
+        if(!aggregate[club]) {
+          aggregate[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
+        }
+        aggregate[club].count++;
+        aggregate[club].manualCount++;
+        aggregate[club].distTotal += s.distance || 0;
+        aggregate[club].distMin = Math.min(aggregate[club].distMin, s.distance || 0);
+        aggregate[club].distMax = Math.max(aggregate[club].distMax, s.distance || 0);
+      });
+
+      // shots stored with rounds
+      rounds.forEach(r=>{
+        r.holes.forEach(h=>{
+          if(!h.club) return;
+          const club = h.club;
+          if(!aggregate[club]) {
+            aggregate[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
+          }
+          aggregate[club].count++;
+          if (h.distanceShot){
+            aggregate[club].manualCount++;
+            aggregate[club].distTotal += h.distanceShot;
+            aggregate[club].distMin = Math.min(aggregate[club].distMin, h.distanceShot);
+            aggregate[club].distMax = Math.max(aggregate[club].distMax, h.distanceShot);
+          }
+        });
+      });
+
+      // populate filter
+      const sel = document.getElementById('club-filter');
+      sel.innerHTML = '<option value="all">Tutti i club</option>';
+      Object.keys(aggregate).sort().forEach(club => {
+        const opt = document.createElement('option');
+        opt.value = club;
+        opt.textContent = club;
+        sel.appendChild(opt);
+      });
+
+      const tbody = document.querySelector('#club-shots-table tbody');
+      tbody.innerHTML = '';
+      Object.keys(aggregate).sort().forEach(club => {
+        const s = aggregate[club];
+        const avg = s.manualCount ? (s.distTotal / s.manualCount).toFixed(1) : '-';
+        const max = s.manualCount ? s.distMax : '-';
+        const min = s.manualCount ? s.distMin : '-';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${club}</td><td>${s.count}</td><td>${avg}</td><td>${max}</td><td>${min}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      // summary per date
+      const summary = {};
+      rounds.forEach(r=>{
+        const date = formatDate(r.date);
+        r.holes.forEach(h=>{
+          if(!h.club) return;
+          const key = `${date}__${h.club}`;
+          if(!summary[key]) summary[key] = {date, club:h.club, totalShots:0, uses:0};
+          summary[key].totalShots += h.score;
+          summary[key].uses += 1;
+        });
+      });
+      allShots.forEach(s=>{
+        const date = formatDate(s.date);
+        const key = `${date}__${s.club}`;
+        if(!summary[key]) summary[key] = {date, club:s.club, totalShots:0, uses:0};
+        summary[key].uses += 1;
+      });
+
+      const tbody2 = document.querySelector('#club-summary-table tbody');
+      tbody2.innerHTML = '';
+      Object.values(summary)
+        .sort((a,b)=>new Date(a.date)-new Date(b.date) || a.club.localeCompare(b.club))
+        .forEach(s=>{
+          const avg = s.uses ? (s.totalShots / s.uses).toFixed(2) : '-';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${s.date}</td><td>${s.club}</td><td>${s.totalShots}</td><td>${s.uses}</td><td>${avg}</td>`;
+          tbody2.appendChild(tr);
+        });
+    }
     
    function drawCharts(rounds, validRounds) {
       const labels = rounds.map(r => formatDate(r.date));
