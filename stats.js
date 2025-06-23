@@ -6,6 +6,12 @@ import { collection, getDocs, query, where, doc, deleteDoc, updateDoc } from "ht
 import { initFirebase } from './firebase-config.js';
 import { calculateHandicap } from './handicap.js';
 
+function escapeHTML(text) {
+  const div = document.createElement('div');
+  div.textContent = text ?? '';
+  return div.innerHTML;
+}
+
 const { db } = initFirebase();
 const uid = localStorage.getItem("uid");
 
@@ -125,8 +131,8 @@ function drawTable(rounds){
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${formatDate(r.date)}</td>
-      <td>${r.course}</td>
-      <td>${r.format} buche</td>
+      <td>${escapeHTML(r.course)}</td>
+      <td>${escapeHTML(r.format)} buche</td>
       <td>${r.score}</td>
       <td>${netto !== '' ? (netto >= 0 ? '+' + netto : netto) : ''}</td>
       <td><a href="round.html?id=${r.id}">Dettagli</a></td>
