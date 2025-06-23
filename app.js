@@ -89,7 +89,12 @@ window.saveHole = async function () {
     score: parseInt(document.getElementById("score").value),
     putts: parseInt(document.getElementById("putts").value),
     fairway: document.getElementById("fairway").value,
-    penalties: parseInt(document.getElementById("penalties").value)
+    penalties: parseInt(document.getElementById("penalties").value),
+    club: document.getElementById("club").value,
+    distanceShot: (() => {
+      const v = parseInt(document.getElementById("distanceShot").value);
+      return isNaN(v) ? null : v;
+    })()
   };
   roundData.push(hole);
 
@@ -136,10 +141,11 @@ window.saveHole = async function () {
 
 
 function clearInputs() {
-  ["par", "distance", "score", "putts", "penalties"].forEach(id => {
+  ["par", "distance", "score", "putts", "penalties", "distanceShot"].forEach(id => {
     document.getElementById(id).value = "";
   });
   document.getElementById("fairway").value = "na";
+  document.getElementById("club").value = "";
 }
 
 window.addEventListener("DOMContentLoaded", () => {
