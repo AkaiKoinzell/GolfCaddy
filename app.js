@@ -3,6 +3,7 @@ import {
   addDoc,
   setDoc,
   getDoc,
+  getDocs,
   deleteDoc,
   doc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
@@ -10,7 +11,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { initFirebase, firebaseConfig } from './firebase-config.js';
-import { courses } from "./courses.js";
+let courses = {};
 import { clubs } from "./clubList.js";
 
 
@@ -25,6 +26,14 @@ let totalHoles = 9;
 let selectedHoles = [];
 const roundData = [];
 const DRAFT_KEY = 'roundDraft';
+
+async function loadCourses() {
+  const snap = await getDocs(collection(db, 'courses'));
+  courses = {};
+  snap.forEach(docSnap => {
+    courses[docSnap.id] = docSnap.data();
+  });
+}
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -247,6 +256,7 @@ async function checkForDraft() {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  await loadCourses();
   populateCourseOptions();
   populateClubSelect();
   document.getElementById("course").addEventListener("input", () => {

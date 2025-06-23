@@ -53,6 +53,7 @@ navigation links.
 - **profile1.html** – manage your personal profile information stored in
   Firestore.
 - **round.html** – display the details of a saved round.
+- **admin.html** – create or edit course definitions stored in Firestore.
 
-The course definitions used by the round entry page are stored in
-`courses.js`; you can customise this file with your own course data.
+Course definitions are now stored in a Firestore collection and can be
+managed through **admin.html**.
