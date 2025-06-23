@@ -11,15 +11,19 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { initFirebase } from './firebase-config.js';
-import { clubs } from './clubList.js';
+import { clubs as defaultClubs } from './clubList.js';
+import { loadClubs } from './userSettings.js';
 
 
 const { app, auth, db } = initFirebase();
 let uid = null;
+let clubs = [...defaultClubs];
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     uid = user.uid;
+    clubs = await loadClubs(uid);
+    populateClubSelect();
     await loadClubData();
   } else {
     window.location.href = "home.html";

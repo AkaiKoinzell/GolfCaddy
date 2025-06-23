@@ -12,7 +12,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { initFirebase, firebaseConfig } from './firebase-config.js';
 let courses = {};
-import { clubs } from "./clubList.js";
+import { clubs as defaultClubs } from "./clubList.js";
+import { loadClubs } from "./userSettings.js";
 
 
 
@@ -27,6 +28,7 @@ let shotIndex = 0;
 let selectedHoles = [];
 const roundData = [];
 const DRAFT_KEY = 'roundDraft';
+let clubs = [...defaultClubs];
 
 async function loadCourses() {
   const snap = await getDocs(collection(db, 'courses'));
@@ -36,11 +38,14 @@ async function loadCourses() {
   });
 }
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     uid = user.uid;
     userDisplayName = user.displayName;
     userEmail = user.email;
+
+    clubs = await loadClubs(uid);
+    document.querySelectorAll('.club-select').forEach(sel => populateClubSelect(sel));
 
     // Auto-riempi il campo player se è vuoto
     const playerInput = document.getElementById("player");
@@ -306,6 +311,9 @@ async function checkForDraft() {
 
 window.addEventListener("DOMContentLoaded", async () => {
   await loadCourses();
+  if (uid) {
+    clubs = await loadClubs(uid);
+  }
   populateCourseOptions();
   shotIndex = document.querySelectorAll('#shots-container .shot-row').length;
   if (shotIndex === 0) {
