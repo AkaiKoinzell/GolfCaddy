@@ -39,7 +39,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function loadClubData() {
-  const clubContainer = document.getElementById("club-container");
+  const clubContainer = document.getElementById("club-stats");
   clubContainer.innerHTML = "";
 
   const q = query(collection(db, "club_shots"), where("uid", "==", uid));
