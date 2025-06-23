@@ -1,7 +1,5 @@
 // clubs.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
-  getFirestore,
   collection,
   query,
   where,
@@ -10,23 +8,12 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import {
-  getAuth,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { initFirebase } from './firebase-config.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
-  authDomain: "golfcaddy-ec421.firebaseapp.com",
-  projectId: "golfcaddy-ec421",
-  storageBucket: "golfcaddy-ec421.appspot.com",
-  messagingSenderId: "497160592489",
-  appId: "1:497160592489:web:548701ab6d395e579456f8",
-  measurementId: "G-XGBVHR0BD5"
-};
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth();
+const { app, auth, db } = initFirebase();
 let uid = null;
 
 onAuthStateChanged(auth, async (user) => {
