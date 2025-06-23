@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   nav.className = 'navbar navbar-expand-lg bg-light mb-3 site-navbar';
   nav.innerHTML = `
     <div class="container-fluid">
-      <a class="navbar-brand" href="home.html">Golf Tracker</a>
+      <a class="navbar-brand" href="home.html">Pro Putt</a>
       <div class="navbar-nav">
         <a class="nav-link" href="home.html">🏠 Home</a>
         <a class="nav-link" href="index.html">➕ Round</a>
