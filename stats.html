@@ -327,7 +327,7 @@ function drawParAverages(rounds) {
       stats[key].uses += 1;
     });
   });
-  const tbody = document.querySelector('#club-stats-table tbody');
+  const tbody = document.querySelector('#club-sumary-table tbody');
   tbody.innerHTML = '';
   Object.values(stats)
     .sort((a,b)=>new Date(a.date) - new Date(b.date) || a.club.localeCompare(b.club))
@@ -379,100 +379,6 @@ function drawParAverages(rounds) {
         }
       });
     }
-
-    function renderClubStats() {
-  const tableBody = document.querySelector("#club-summary-table tbody");
-  const select = document.getElementById("club-filter");
-  tableBody.innerHTML = "";
-  select.innerHTML = `<option value="all">Tutti i club</option>`;
-
-  const statsByClub = {};
-  allShots.forEach(shot => {
-    const { club, distance } = shot;
-    if (!statsByClub[club]) statsByClub[club] = [];
-    statsByClub[club].push(distance);
-  });
-
-  Object.keys(statsByClub).forEach(club => {
-    const distances = statsByClub[club];
-    const avg = (distances.reduce((a, b) => a + b, 0) / distances.length).toFixed(1);
-    const max = Math.max(...distances);
-    const min = Math.min(...distances);
-
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${club}</td>
-      <td>${distances.length}</td>
-      <td>${avg}</td>
-      <td>${max}</td>
-      <td>${min}</td>
-    `;
-    tableBody.appendChild(row);
-
-    const opt = document.createElement("option");
-    opt.value = club;
-    opt.textContent = club;
-    select.appendChild(opt);
-  });
-}
-
-let chart;
-function renderClubDistanceChart() {
-  const ctx = document.getElementById("club-distance-chart").getContext("2d");
-
-  const grouped = {};
-  allShots.forEach(({ club, distance, timestamp }) => {
-    const date = new Date(timestamp);
-    const week = `${date.getFullYear()}-W${String(getWeek(date)).padStart(2, "0")}`;
-    if (!grouped[club]) grouped[club] = {};
-    if (!grouped[club][week]) grouped[club][week] = [];
-    grouped[club][week].push(distance);
-  });
-
-  const datasets = Object.entries(grouped).map(([club, weeks]) => {
-    const sortedWeeks = Object.keys(weeks).sort();
-    const data = sortedWeeks.map(w => {
-      const dists = weeks[w];
-      return {
-        x: w,
-        y: dists.reduce((a, b) => a + b, 0) / dists.length
-      };
-    });
-
-    return {
-      label: club,
-      data,
-      fill: false,
-      tension: 0.3
-    };
-  });
-
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: "line",
-    data: {
-      datasets
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: {
-          display: true,
-          text: 'Andamento distanza media per club (settimanale)'
-        }
-      },
-      scales: {
-        x: {
-          type: 'category',
-          title: { display: true, text: "Settimana" }
-        },
-        y: {
-          title: { display: true, text: "Distanza media (m)" }
-        }
-      }
-    }
-  });
-}
 
 function getWeek(date) {
   const d = new Date(date);
