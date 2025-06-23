@@ -220,7 +220,8 @@ window.saveHole = async function () {
 
   const par = parseInt(document.getElementById("par").value);
   const distance = parseInt(document.getElementById("distance").value);
-  const score = parseInt(document.getElementById("score").value);
+  const scoreInput = document.getElementById("score");
+  const scoreVal = scoreInput ? parseInt(scoreInput.value) : NaN;
   const putts = parseInt(document.getElementById("putts").value);
   let penalties = parseInt(document.getElementById("penalties").value);
   const shotRows = document.querySelectorAll('#shots-container .shot-row');
@@ -236,7 +237,7 @@ window.saveHole = async function () {
     }
   });
 
-  if ([par, distance, score, putts].some(v => isNaN(v))) {
+  if ([par, distance, putts].some(v => isNaN(v)) || (scoreInput && isNaN(scoreVal))) {
     alert("Compila tutti i campi numerici obbligatori con valori validi.");
     saveButton.disabled = false;
     return;
@@ -245,6 +246,8 @@ window.saveHole = async function () {
   if (isNaN(penalties)) {
     penalties = 0;
   }
+
+  const score = scoreInput ? scoreVal : shots.length + putts + (isNaN(penalties) ? 0 : penalties);
 
   const hole = {
     number: selectedHoles[currentHole - 1].number,

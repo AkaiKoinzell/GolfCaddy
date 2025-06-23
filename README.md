@@ -46,8 +46,8 @@ navigation links.
 
 - **home.html** – landing page that handles Google authentication and provides
   navigation to the rest of the app.
-- **index.html** – start a new round. Select a course and record scores for each
-  hole; the data is saved to Firestore when the round is completed.
+- **index.html** – start a new round. Choose between manual score entry or
+  "live" mode that calculates the hole score from the recorded shots and putts.
 - **stats.html** – view personal statistics or those of a friend using
   `?uid=<id>`; shows handicap history and club statistics loaded from Firestore.
 - **clubs.html** – record individual club shots and see average distances for
