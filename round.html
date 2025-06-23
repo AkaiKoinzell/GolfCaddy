@@ -59,12 +59,8 @@
   <script type="module">
     if (!localStorage.getItem("uid")) window.location.href = "home.html";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      getAuth
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
