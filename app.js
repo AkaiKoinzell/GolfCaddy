@@ -224,14 +224,10 @@ window.saveHole = async function () {
 
   const par = parseInt(document.getElementById("par").value);
   const distance = parseInt(document.getElementById("distance").value);
-  const scoreInput = document.getElementById("score");
-  const scoreVal = scoreInput ? parseInt(scoreInput.value) : NaN;
   saveCurrentPlayerData();
-
-  const putts = parseInt(document.getElementById("putts").value);
   let penalties = parseInt(document.getElementById("penalties").value);
 
-  if ([par, distance, putts].some(v => isNaN(v)) || (scoreInput && isNaN(scoreVal))) {
+  if ([par, distance].some(v => isNaN(v))) {
     alert("Compila tutti i campi numerici obbligatori con valori validi.");
     saveButton.disabled = false;
     return;
@@ -243,17 +239,18 @@ window.saveHole = async function () {
 
   holeData.forEach((data, idx) => {
     const shots = data.shots || [];
-    const p = parseInt(data.putts);
     const pen = parseInt(data.penalties);
-    const score = shots.length + (isNaN(p) ? 0 : p) + (isNaN(pen) ? 0 : pen);
+    const penaltiesVal = isNaN(pen) ? 0 : pen;
+    const puttsCount = shots.filter(s => s.club === 'Putter').length;
+    const score = shots.length + penaltiesVal;
     const hole = {
       number: selectedHoles[currentHole - 1].number,
       par,
       distance,
       score,
-      putts: isNaN(p) ? 0 : p,
+      putts: puttsCount,
       fairway: data.fairway,
-      penalties: isNaN(pen) ? 0 : pen,
+      penalties: penaltiesVal,
       shots,
       club: shots[0]?.club || '',
       distanceShot: shots[0] ? shots[0].distance : null
@@ -314,11 +311,13 @@ window.saveHole = async function () {
 
 
 function clearInputs() {
-  ["par", "distance", "score", "putts", "penalties"].forEach(id => {
+  ["par", "distance", "penalties"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
   document.getElementById("fairway").value = "na";
+  const fairwayGroup = document.getElementById('fairway-group');
+  if (fairwayGroup) fairwayGroup.classList.add('hidden');
   const container = document.getElementById('shots-container');
   container.innerHTML = '';
   shotIndex = 0;
@@ -351,12 +350,20 @@ function addShotRow() {
   `;
   container.appendChild(div);
   populateClubSelect(div.querySelector('select'));
+  const sel = div.querySelector('select');
+  if (shotIndex === 0 && sel) {
+    sel.addEventListener('change', maybeShowFairway);
+  }
   shotIndex++;
+}
+
+function maybeShowFairway(){
+  const grp = document.getElementById('fairway-group');
+  if(grp) grp.classList.remove('hidden');
 }
 
 function saveCurrentPlayerData(){
   if(!holeData[currentPlayerIndex]) return;
-  holeData[currentPlayerIndex].putts = document.getElementById('putts').value;
   holeData[currentPlayerIndex].penalties = document.getElementById('penalties').value;
   holeData[currentPlayerIndex].fairway = document.getElementById('fairway').value;
   const shots = [];
@@ -372,13 +379,14 @@ function saveCurrentPlayerData(){
 
 function loadCurrentPlayerData(){
   const data = holeData[currentPlayerIndex];
-  document.getElementById('putts').value = data.putts;
   document.getElementById('penalties').value = data.penalties;
   document.getElementById('fairway').value = data.fairway;
   const container = document.getElementById('shots-container');
   container.innerHTML = '';
   shotIndex = 0;
   if(data.shots && data.shots.length){
+    const fairwayGroup = document.getElementById('fairway-group');
+    if(fairwayGroup) fairwayGroup.classList.remove('hidden');
     data.shots.forEach(s=>{
       addShotRow();
       const row = container.lastElementChild;
@@ -388,11 +396,13 @@ function loadCurrentPlayerData(){
     });
   } else {
     addShotRow();
+    const fairwayGroup = document.getElementById('fairway-group');
+    if(fairwayGroup) fairwayGroup.classList.add('hidden');
   }
 }
 
 function resetHoleData(){
-  holeData = playersScores.map(() => ({ putts: '', penalties: '', fairway: 'na', shots: [] }));
+  holeData = playersScores.map(() => ({ penalties: '', fairway: 'na', shots: [] }));
   currentPlayerIndex = 0;
   const sel = document.getElementById('player-select');
   if(sel) sel.value = '0';
@@ -425,7 +435,7 @@ async function checkForDraft() {
 
     document.getElementById('players').value = (draft.meta.players || []).join(', ');
     playersScores = draft.playersScores || (draft.meta.players || []).map(n => ({name: n, holes: []}));
-    holeData = draft.holeData || (draft.meta.players || []).map(() => ({ putts: '', penalties: '', fairway: 'na', shots: [] }));
+    holeData = draft.holeData || (draft.meta.players || []).map(() => ({ penalties: '', fairway: 'na', shots: [] }));
     currentPlayerIndex = draft.currentPlayerIndex || 0;
     const sel = document.getElementById('player-select');
     if(sel){
@@ -474,6 +484,8 @@ window.addEventListener("DOMContentLoaded", async () => {
       populateClubSelect(row.querySelector('select'));
     });
   }
+  const fairwayGroup = document.getElementById('fairway-group');
+  if (fairwayGroup) fairwayGroup.classList.add('hidden');
   document.getElementById("course").addEventListener("input", () => {
     updateLayoutOptions();
     updateComboOptions();
@@ -483,6 +495,23 @@ window.addEventListener("DOMContentLoaded", async () => {
   const addBtn = document.getElementById('add-shot-btn');
   if(addBtn){
     addBtn.addEventListener('click', addShotRow);
+  }
+
+  const prevBtn = document.getElementById('prev-player');
+  const nextBtn = document.getElementById('next-player');
+  if(prevBtn && nextBtn){
+    prevBtn.addEventListener('click', () => {
+      saveCurrentPlayerData();
+      currentPlayerIndex = (currentPlayerIndex - 1 + playersScores.length) % playersScores.length;
+      document.getElementById('player-select').value = String(currentPlayerIndex);
+      loadCurrentPlayerData();
+    });
+    nextBtn.addEventListener('click', () => {
+      saveCurrentPlayerData();
+      currentPlayerIndex = (currentPlayerIndex + 1) % playersScores.length;
+      document.getElementById('player-select').value = String(currentPlayerIndex);
+      loadCurrentPlayerData();
+    });
   }
 
   const playerSel = document.getElementById('player-select');
@@ -552,7 +581,7 @@ window.startRound = function () {
   }
   playersScores = names.map(n => ({ name: n, holes: [] }));
   const playerName = playersScores[0].name;
-  holeData = names.map(() => ({ putts: '', penalties: '', fairway: 'na', shots: [] }));
+  holeData = names.map(() => ({ penalties: '', fairway: 'na', shots: [] }));
   currentPlayerIndex = 0;
   const sel = document.getElementById('player-select');
   if(sel){

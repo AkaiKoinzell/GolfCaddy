@@ -18,10 +18,6 @@
 
   <main class="container">
   <form id="start-round" class="form-container">
-    <div class="form-check form-switch mb-3">
-      <input class="form-check-input" type="checkbox" id="live-mode" onchange="toggleLiveMode()">
-      <label class="form-check-label" for="live-mode">Modalità live (calcola punteggio)</label>
-    </div>
     <label for="players">Giocatori (separati da virgola):</label>
     <input type="text" id="players" class="form-control" />
 
@@ -67,29 +63,29 @@
     <h2>Buca <span id="hole-number">1</span></h2>
     <label for="player-select">Giocatore:</label>
     <select id="player-select" class="form-select"></select>
+    <div class="btn-group my-2" role="group" id="player-nav">
+      <button type="button" class="btn btn-secondary" id="prev-player">Precedente</button>
+      <button type="button" class="btn btn-secondary" id="next-player">Successivo</button>
+    </div>
     <label for="par">Par:</label>
     <input type="number" id="par" class="form-control" />
 
     <label for="distance">Distanza (metri):</label>
     <input type="number" id="distance" class="form-control" />
 
-    <div id="score-group">
-      <label for="score">Colpi effettuati:</label>
-      <input type="number" id="score" class="form-control" />
+    <div id="fairway-group" class="hidden">
+      <label for="fairway">Fairway colpito:</label>
+        <select id="fairway" class="form-select">
+          <option value="na">N/A</option>
+          <option value="yes">Sì</option>
+          <option value="no">No</option>
+        </select>
     </div>
 
-    <label for="putts">Numero di putt:</label>
-    <input type="number" id="putts" class="form-control" />
-
-    <label for="fairway">Fairway colpito:</label>
-    <select id="fairway" class="form-select">
-      <option value="na">N/A</option>
-      <option value="yes">Sì</option>
-      <option value="no">No</option>
-    </select>
-
-    <label for="penalties">Penalità:</label>
-    <input type="number" id="penalties" class="form-control" />
+    <div class="mb-2">
+      <label for="penalties">Penalità:</label>
+      <input type="number" id="penalties" class="form-control" />
+    </div>
 
   <div id="shots-container">
     <div class="shot-row">
@@ -111,21 +107,6 @@
 <script src="navbar.js"></script>
   <script type="module" src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    function toggleLiveMode() {
-      const live = document.getElementById('live-mode').checked;
-      const group = document.getElementById('score-group');
-      const score = document.getElementById('score');
-      if (live) {
-        if (group) group.style.display = 'none';
-        if (score) score.removeAttribute('id');
-      } else {
-        if (group) group.style.display = 'block';
-        const hidden = document.querySelector('#score-group input');
-        if (hidden && !hidden.id) hidden.id = 'score';
-      }
-    }
-    document.addEventListener('DOMContentLoaded', toggleLiveMode);
-  </script>
+  
 </body>
 </html>
