@@ -1,11 +1,22 @@
+:root {
+    --primary-color: #006400;
+    --nav-bg: #e0e0e0;
+}
+
 body {
-    font-family: sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
+    line-height: 1.6;
+    background-color: #fff;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 header {
-    background-color: #006400;
-    color: white;
+    background-color: var(--primary-color);
+    color: #fff;
     padding: 1rem;
     text-align: center;
 }
@@ -13,19 +24,44 @@ header {
 nav {
     display: flex;
     justify-content: center;
-    gap: 1rem;
-    background: #e0e0e0;
-    padding: 0.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--nav-bg);
+    padding: 0.5rem 1rem;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
 }
 
 nav a {
     text-decoration: none;
-    color: #006400;
+    color: var(--primary-color);
     font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+nav a:hover {
+    background-color: rgba(0, 100, 0, 0.1);
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+    }
+
+    nav a {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 h1,
 h2 {
-    color: #006400;
+    color: var(--primary-color);
 }

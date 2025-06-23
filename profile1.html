@@ -57,19 +57,21 @@
     <a href="stats.html">Statistiche</a>
   </nav>
 
-  <h2>Informazioni Personali</h2>
-  <div class="profile-section">
-    <label for="name">Nome:</label>
-    <input type="text" id="name" placeholder="Inserisci il tuo nome">
+  <main class="container">
+    <h2>Informazioni Personali</h2>
+    <div class="profile-section">
+      <label for="name">Nome:</label>
+      <input type="text" id="name" placeholder="Inserisci il tuo nome">
 
-    <label for="email">Email (opzionale):</label>
-    <input type="email" id="email" placeholder="Inserisci la tua email">
+      <label for="email">Email (opzionale):</label>
+      <input type="email" id="email" placeholder="Inserisci la tua email">
 
-    <label for="hcp">Handicap Attuale (opzionale):</label>
-    <input type="number" step="0.1" id="hcp" placeholder="Es. 18.5">
+      <label for="hcp">Handicap Attuale (opzionale):</label>
+      <input type="number" step="0.1" id="hcp" placeholder="Es. 18.5">
 
-    <button onclick="saveProfile()">Salva Profilo</button>
-  </div>
+      <button onclick="saveProfile()">Salva Profilo</button>
+    </div>
+  </main>
 
   <script type="module" src="profile.js"></script>
 </body>
