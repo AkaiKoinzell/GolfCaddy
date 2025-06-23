@@ -14,8 +14,8 @@
 
   <main class="container">
   <form id="start-round" class="form-container">
-    <label for="player">Il tuo nome:</label>
-    <input type="text" id="player" class="form-control" />
+    <label for="players">Giocatori (separati da virgola):</label>
+    <input type="text" id="players" class="form-control" />
 
     <label for="course">Nome del campo (scrivi per cercare):</label>
     <input type="text" id="course" class="form-control" list="course-options" oninput="filterCourseOptions()" />
@@ -76,6 +76,7 @@
       <input type="number" id="distance-input-0" class="distance-input form-control" />
     </div>
   </div>
+  <div id="additional-player-scores"></div>
     <button type="button" id="add-shot-btn" class="btn btn-success">Aggiungi colpo</button>
 
     <button type="button" class="btn btn-success" onclick="saveHole()">Salva Buca</button>
