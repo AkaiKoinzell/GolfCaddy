@@ -233,6 +233,7 @@
     drawTable(rounds);
     drawCharts(rounds, validForHCP);
     drawParAverages(rounds);
+    drawClubStats(rounds);
   }
     
     function formatDate(d){
@@ -274,6 +275,32 @@ function drawParAverages(rounds) {
         tbody.innerHTML += row;
       });
     }
+
+    function drawClubStats(rounds){
+  const stats = {};
+  rounds.forEach(r=>{
+    const date = formatDate(r.date);
+    r.holes.forEach(h=>{
+      const club = h.club || 'Altro';
+      const key = `${date}__${club}`;
+      if (!(key in stats)) {
+        stats[key] = { date, club, totalShots:0, uses:0 };
+      }
+      stats[key].totalShots += h.score;
+      stats[key].uses += 1;
+    });
+  });
+  const tbody = document.querySelector('#club-stats-table tbody');
+  tbody.innerHTML = '';
+  Object.values(stats)
+    .sort((a,b)=>new Date(a.date) - new Date(b.date) || a.club.localeCompare(b.club))
+    .forEach(s=>{
+      const avg = (s.totalShots / s.uses).toFixed(2);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${s.date}</td><td>${s.club}</td><td>${s.totalShots}</td><td>${s.uses}</td><td>${avg}</td>`;
+      tbody.appendChild(tr);
+    });
+}
     
    function drawCharts(rounds, validRounds) {
       const labels = rounds.map(r => formatDate(r.date));
