@@ -147,12 +147,16 @@ function drawTable(rounds){
       <td>${r.score}</td>
       <td>${netto !== '' ? (netto >= 0 ? '+' + netto : netto) : ''}</td>
       <td><a href="round.html?id=${r.id}">Dettagli</a></td>
+      <td><button class="copy-link" data-id="${r.id}">Copia link</button></td>
       <td><button class="delete-round" data-id="${r.id}">Elimina</button></td>
     `;
     tbody.appendChild(tr);
   });
   tbody.querySelectorAll('.delete-round').forEach(btn => {
     btn.addEventListener('click', () => deleteRound(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.copy-link').forEach(btn => {
+    btn.addEventListener('click', () => copyRoundLink(btn.dataset.id));
   });
 }
 
@@ -289,6 +293,19 @@ async function deleteRound(id){
   if(!confirm('Eliminare il round?')) return;
   await deleteDoc(doc(db, 'golf_rounds', id));
   await loadStats();
+}
+
+function copyRoundLink(id){
+  const url = `${window.location.origin}/round.html?id=${id}`;
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link copiato negli appunti');
+    }).catch(() => {
+      prompt('Copia il link:', url);
+    });
+  } else {
+    prompt('Copia il link:', url);
+  }
 }
 
 function drawCharts(rounds, validRounds){
