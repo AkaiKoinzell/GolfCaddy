@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,17 +70,17 @@
     <label for="penalties">Penalità:</label>
     <input type="number" id="penalties" />
 
-    <div id="shots-container">
-      <div class="shot-row">
-        <label>Bastone utilizzato:</label>
-        <select class="club-select">
-          <option value="">-- Seleziona --</option>
-        </select>
+  <div id="shots-container">
+    <div class="shot-row">
+      <label for="club-select-0">Bastone utilizzato:</label>
+      <select id="club-select-0" class="club-select">
+        <option value="">-- Seleziona --</option>
+      </select>
 
-        <label>Distanza colpo (metri):</label>
-        <input type="number" class="distance-input" />
-      </div>
+      <label for="distance-input-0">Distanza colpo (metri):</label>
+      <input type="number" id="distance-input-0" class="distance-input" />
     </div>
+  </div>
     <button type="button" id="add-shot-btn" class="btn">Aggiungi colpo</button>
 
     <button type="button" class="btn" onclick="saveHole()">Salva Buca</button>

@@ -23,6 +23,7 @@ let userDisplayName = null;
 let userEmail = null;
 let currentHole = 1;
 let totalHoles = 9;
+let shotIndex = 0;
 let selectedHoles = [];
 const roundData = [];
 const DRAFT_KEY = 'roundDraft';
@@ -226,6 +227,7 @@ function clearInputs() {
   document.getElementById("fairway").value = "na";
   const container = document.getElementById('shots-container');
   container.innerHTML = '';
+  shotIndex = 0;
   addShotRow();
 }
 
@@ -245,14 +247,17 @@ function addShotRow() {
   const container = document.getElementById('shots-container');
   const div = document.createElement('div');
   div.className = 'shot-row';
+  const clubId = `club-select-${shotIndex}`;
+  const distId = `distance-input-${shotIndex}`;
   div.innerHTML = `
-    <label>Bastone utilizzato:</label>
-    <select class="club-select"></select>
-    <label>Distanza colpo (metri):</label>
-    <input type="number" class="distance-input" />
+    <label for="${clubId}">Bastone utilizzato:</label>
+    <select id="${clubId}" class="club-select"></select>
+    <label for="${distId}">Distanza colpo (metri):</label>
+    <input id="${distId}" type="number" class="distance-input" />
   `;
   container.appendChild(div);
   populateClubSelect(div.querySelector('select'));
+  shotIndex++;
 }
 
 async function checkForDraft() {
@@ -302,7 +307,14 @@ async function checkForDraft() {
 window.addEventListener("DOMContentLoaded", async () => {
   await loadCourses();
   populateCourseOptions();
-  addShotRow();
+  shotIndex = document.querySelectorAll('#shots-container .shot-row').length;
+  if (shotIndex === 0) {
+    addShotRow();
+  } else {
+    document.querySelectorAll('#shots-container .shot-row').forEach(row => {
+      populateClubSelect(row.querySelector('select'));
+    });
+  }
   document.getElementById("course").addEventListener("input", () => {
     updateLayoutOptions();
     updateComboOptions();
