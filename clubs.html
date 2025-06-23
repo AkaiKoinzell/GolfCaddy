@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <title>Statistiche Bastoni - Golf Tracker</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -15,17 +16,17 @@
     <div class="form-section">
       <h2>Registra un colpo</h2>
       <label for="club-select">Bastone:</label>
-      <select id="club-select">
+      <select id="club-select" class="form-select">
         <option value="">-- Seleziona --</option>
       </select>
 
       <label for="distance-input">Distanza (metri):</label>
-      <input type="number" id="distance-input" placeholder="Es. 145"/>
+      <input type="number" id="distance-input" class="form-control" placeholder="Es. 145"/>
 
       <label for="notes-input">Note (opzionale):</label>
-      <input type="text" id="notes-input" placeholder="Condizioni, vento, ecc." />
+      <input type="text" id="notes-input" class="form-control" placeholder="Condizioni, vento, ecc." />
 
-      <button class="btn" onclick="saveClubShot()">Salva Colpo</button>
+      <button class="btn btn-success" onclick="saveClubShot()">Salva Colpo</button>
     </div>
 
     <div class="stats-section">
@@ -38,5 +39,6 @@
 
 <script src="navbar.js"></script>
   <script type="module" src="clubs.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
