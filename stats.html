@@ -73,10 +73,10 @@
     <h1>Statistiche Personali</h1>
   </header>
   <nav>
-    <a href="home.html">Home</a>
-    <a href="index.html">Aggiungi Round</a>
-    <a href="stats.html">Statistiche</a>
-    <a href="profile1.html">Profilo</a>
+    <a href="home.html">🏠 Home</a>
+    <a href="index.html">➕ Round</a>
+    <a href="clubs.html">🏌️ Bastoni</a>
+    <a href="profile1.html">👤 Profilo</a>
   </nav>
 
   <section style="text-align:center;margin:2rem;">
@@ -110,6 +110,31 @@
       <tbody></tbody>
     </table>
   </section>
+  <section>
+  <h2>Statistiche per Club</h2>
+
+  <label for="club-filter">Filtra per club:</label>
+  <select id="club-filter">
+    <option value="all">Tutti i club</option>
+  </select>
+
+  <div style="overflow-x: auto;">
+    <table id="club-stats-table" border="1" cellpadding="6" style="margin-top: 1rem; width: 100%; text-align: left;">
+      <thead>
+        <tr>
+          <th>Club</th>
+          <th>Numero colpi</th>
+          <th>Distanza media (m)</th>
+          <th>Distanza max (m)</th>
+          <th>Distanza min (m)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <canvas id="club-distance-chart" height="120" style="margin-top: 2rem;"></canvas>
+</section>
   <section class="chart-container">
   <h2>Riepilogo Colpi per Club nel Tempo</h2>
   <table id="club-stats-table">
@@ -163,6 +188,7 @@
 
     let allRounds = [], filters = { format: 'all', course: 'all' };
     let hcpChart, puttChart;
+    let allShots = [];
 
    async function loadStats() {
   const q = query(collection(db, "golf_rounds"), where("uid", "==", uid));
@@ -190,6 +216,8 @@
 
   populateCourseFilter();
   updateDisplay();
+  renderClubStats();
+  renderClubDistanceChart();
 }
 
     function populateCourseFilter(){
@@ -342,6 +370,108 @@ function drawParAverages(rounds) {
         }
       });
     }
+
+    function renderClubStats() {
+  const tableBody = document.querySelector("#club-stats-table tbody");
+  const select = document.getElementById("club-filter");
+  tableBody.innerHTML = "";
+  select.innerHTML = `<option value="all">Tutti i club</option>`;
+
+  const statsByClub = {};
+  allShots.forEach(shot => {
+    const { club, distance } = shot;
+    if (!statsByClub[club]) statsByClub[club] = [];
+    statsByClub[club].push(distance);
+  });
+
+  Object.keys(statsByClub).forEach(club => {
+    const distances = statsByClub[club];
+    const avg = (distances.reduce((a, b) => a + b, 0) / distances.length).toFixed(1);
+    const max = Math.max(...distances);
+    const min = Math.min(...distances);
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${club}</td>
+      <td>${distances.length}</td>
+      <td>${avg}</td>
+      <td>${max}</td>
+      <td>${min}</td>
+    `;
+    tableBody.appendChild(row);
+
+    const opt = document.createElement("option");
+    opt.value = club;
+    opt.textContent = club;
+    select.appendChild(opt);
+  });
+}
+
+let chart;
+function renderClubDistanceChart() {
+  const ctx = document.getElementById("club-distance-chart").getContext("2d");
+
+  const grouped = {};
+  allShots.forEach(({ club, distance, timestamp }) => {
+    const date = new Date(timestamp);
+    const week = `${date.getFullYear()}-W${String(getWeek(date)).padStart(2, "0")}`;
+    if (!grouped[club]) grouped[club] = {};
+    if (!grouped[club][week]) grouped[club][week] = [];
+    grouped[club][week].push(distance);
+  });
+
+  const datasets = Object.entries(grouped).map(([club, weeks]) => {
+    const sortedWeeks = Object.keys(weeks).sort();
+    const data = sortedWeeks.map(w => {
+      const dists = weeks[w];
+      return {
+        x: w,
+        y: dists.reduce((a, b) => a + b, 0) / dists.length
+      };
+    });
+
+    return {
+      label: club,
+      data,
+      fill: false,
+      tension: 0.3
+    };
+  });
+
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      datasets
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Andamento distanza media per club (settimanale)'
+        }
+      },
+      scales: {
+        x: {
+          type: 'category',
+          title: { display: true, text: "Settimana" }
+        },
+        y: {
+          title: { display: true, text: "Distanza media (m)" }
+        }
+      }
+    }
+  });
+}
+
+function getWeek(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}    
     loadStats();
   </script>
 </body>
