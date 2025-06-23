@@ -13,7 +13,7 @@ import {
 import { initFirebase, firebaseConfig } from './firebase-config.js';
 let courses = {};
 import { clubs as defaultClubs } from "./clubList.js";
-import { loadClubs } from "./userSettings.js";
+import { loadClubs, getStoredClubs } from "./userSettings.js";
 
 
 
@@ -28,7 +28,7 @@ let shotIndex = 0;
 let selectedHoles = [];
 const roundData = [];
 const DRAFT_KEY = 'roundDraft';
-let clubs = [...defaultClubs];
+let clubs = getStoredClubs() || [...defaultClubs];
 
 async function loadCourses() {
   const snap = await getDocs(collection(db, 'courses'));
@@ -311,7 +311,13 @@ async function checkForDraft() {
 
 window.addEventListener("DOMContentLoaded", async () => {
   await loadCourses();
-  if (uid) {
+  if (!uid) {
+    const storedUid = localStorage.getItem('uid');
+    if (storedUid) {
+      uid = storedUid;
+      clubs = await loadClubs(uid);
+    }
+  } else {
     clubs = await loadClubs(uid);
   }
   populateCourseOptions();

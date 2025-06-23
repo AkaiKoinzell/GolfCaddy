@@ -12,12 +12,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { initFirebase } from './firebase-config.js';
 import { clubs as defaultClubs } from './clubList.js';
-import { loadClubs } from './userSettings.js';
+import { loadClubs, getStoredClubs } from './userSettings.js';
 
 
 const { app, auth, db } = initFirebase();
 let uid = null;
-let clubs = [...defaultClubs];
+let clubs = getStoredClubs() || [...defaultClubs];
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -153,6 +153,13 @@ function populateClubSelect() {
   });
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
+  if (!uid) {
+    const storedUid = localStorage.getItem('uid');
+    if (storedUid) {
+      uid = storedUid;
+      clubs = await loadClubs(uid);
+    }
+  }
   populateClubSelect();
 });
