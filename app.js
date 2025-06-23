@@ -134,7 +134,18 @@ window.saveHole = async function () {
   const score = parseInt(document.getElementById("score").value);
   const putts = parseInt(document.getElementById("putts").value);
   let penalties = parseInt(document.getElementById("penalties").value);
-  const distanceShotVal = parseInt(document.getElementById("distanceShot").value);
+  const shotRows = document.querySelectorAll('#shots-container .shot-row');
+  const shots = [];
+  shotRows.forEach(row => {
+    const club = row.querySelector('.club-select').value;
+    const distVal = parseInt(row.querySelector('.distance-input').value);
+    if (club || !isNaN(distVal)) {
+      shots.push({
+        club: club || null,
+        distance: isNaN(distVal) ? null : distVal
+      });
+    }
+  });
 
   if ([par, distance, score, putts].some(v => isNaN(v))) {
     alert("Compila tutti i campi numerici obbligatori con valori validi.");
@@ -154,8 +165,9 @@ window.saveHole = async function () {
     putts,
     fairway: document.getElementById("fairway").value,
     penalties,
-    club: document.getElementById("club").value,
-    distanceShot: isNaN(distanceShotVal) ? null : distanceShotVal
+    shots,
+    club: shots[0]?.club || '',
+    distanceShot: shots[0] ? shots[0].distance : null
   };
 
   roundData.push(hole);
@@ -207,23 +219,40 @@ window.saveHole = async function () {
 
 
 function clearInputs() {
-  ["par", "distance", "score", "putts", "penalties", "distanceShot"].forEach(id => {
-    document.getElementById(id).value = "";
+  ["par", "distance", "score", "putts", "penalties"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
   });
   document.getElementById("fairway").value = "na";
-  document.getElementById("club").value = "";
+  const container = document.getElementById('shots-container');
+  container.innerHTML = '';
+  addShotRow();
 }
 
-function populateClubSelect() {
-  const sel = document.getElementById("club");
-  if (!sel) return;
-  sel.innerHTML = '<option value="">-- Seleziona --</option>';
+function populateClubSelect(sel) {
+  const select = sel || document.querySelector('#shots-container .club-select');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Seleziona --</option>';
   clubs.forEach(c => {
     const opt = document.createElement("option");
     opt.value = c;
     opt.textContent = c;
-    sel.appendChild(opt);
+    select.appendChild(opt);
   });
+}
+
+function addShotRow() {
+  const container = document.getElementById('shots-container');
+  const div = document.createElement('div');
+  div.className = 'shot-row';
+  div.innerHTML = `
+    <label>Bastone utilizzato:</label>
+    <select class="club-select"></select>
+    <label>Distanza colpo (metri):</label>
+    <input type="number" class="distance-input" />
+  `;
+  container.appendChild(div);
+  populateClubSelect(div.querySelector('select'));
 }
 
 async function checkForDraft() {
@@ -273,12 +302,17 @@ async function checkForDraft() {
 window.addEventListener("DOMContentLoaded", async () => {
   await loadCourses();
   populateCourseOptions();
-  populateClubSelect();
+  addShotRow();
   document.getElementById("course").addEventListener("input", () => {
     updateLayoutOptions();
     updateComboOptions();
   });
   document.getElementById("holes").addEventListener("change", updateComboOptions);
+
+  const addBtn = document.getElementById('add-shot-btn');
+  if(addBtn){
+    addBtn.addEventListener('click', addShotRow);
+  }
 
   localStorage.removeItem("roundSaved"); // reset all'avvio
   await checkForDraft();

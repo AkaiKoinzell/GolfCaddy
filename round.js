@@ -27,6 +27,10 @@ async function loadRound() {
   data.holes.forEach(hole => {
     const div = document.createElement("div");
     div.className = "hole";
+    const shots = (hole.shots && hole.shots.length)
+      ? hole.shots.map((s,i)=>`<p><strong>Colpo ${i+1}:</strong> ${s.club || '—'}${s.distance ? ' - ' + s.distance + ' m' : ''}</p>`).join('')
+      : `<p><strong>Club:</strong> ${hole.club || '—'}</p><p><strong>Distanza colpo:</strong> ${hole.distanceShot ? hole.distanceShot + ' m' : '—'}</p>`;
+
     div.innerHTML = `
       <div class="hole-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
         <span>Buca ${hole.number} – ${hole.score} colpi</span>
@@ -38,8 +42,7 @@ async function loadRound() {
         <p><strong>Putt:</strong> ${hole.putts}</p>
         <p><strong>Fairway:</strong> ${hole.fairway}</p>
         <p><strong>Penalità:</strong> ${hole.penalties}</p>
-        <p><strong>Club:</strong> ${hole.club || '—'}</p>
-        <p><strong>Distanza colpo:</strong> ${hole.distanceShot ? hole.distanceShot + ' m' : '—'}</p>
+        ${shots}
       </div>`;
     info.appendChild(div);
   });

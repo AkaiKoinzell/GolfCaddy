@@ -27,6 +27,19 @@
       margin-top: 0.2rem;
       box-sizing: border-box;
     }
+    .shot-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    .shot-row label {
+      margin-top: 0;
+      width: auto;
+    }
+    .shot-row select, .shot-row input {
+      flex: 1;
+    }
     #hole-input {
       display: none;
     }
@@ -96,13 +109,18 @@
     <label for="penalties">Penalità:</label>
     <input type="number" id="penalties" />
 
-    <label for="club">Bastone utilizzato:</label>
-    <select id="club">
-      <option value="">-- Seleziona --</option>
-    </select>
+    <div id="shots-container">
+      <div class="shot-row">
+        <label>Bastone utilizzato:</label>
+        <select class="club-select">
+          <option value="">-- Seleziona --</option>
+        </select>
 
-    <label for="distanceShot">Distanza colpo (metri):</label>
-    <input type="number" id="distanceShot" />
+        <label>Distanza colpo (metri):</label>
+        <input type="number" class="distance-input" />
+      </div>
+    </div>
+    <button type="button" id="add-shot-btn">Aggiungi colpo</button>
 
     <button type="button" onclick="saveHole()">Salva Buca</button>
   </div>

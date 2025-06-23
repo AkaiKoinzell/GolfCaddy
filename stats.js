@@ -177,19 +177,36 @@ function drawClubStats(rounds){
 
   rounds.forEach(r=>{
     r.holes.forEach(h=>{
-      if(!h.club) return;
-      const club = h.club;
-      if(!clubAggregates[club]) {
-        clubAggregates[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
-        clubDistances[club] = [];
-      }
-      clubAggregates[club].count++;
-      if(h.distanceShot){
-        clubAggregates[club].manualCount++;
-        clubAggregates[club].distTotal += h.distanceShot;
-        clubAggregates[club].distMin = Math.min(clubAggregates[club].distMin, h.distanceShot);
-        clubAggregates[club].distMax = Math.max(clubAggregates[club].distMax, h.distanceShot);
-        clubDistances[club].push(h.distanceShot);
+      if(h.shots && h.shots.length){
+        h.shots.forEach(s=>{
+          const club = s.club || 'Altro';
+          if(!clubAggregates[club]){
+            clubAggregates[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
+            clubDistances[club] = [];
+          }
+          clubAggregates[club].count++;
+          if(s.distance){
+            clubAggregates[club].manualCount++;
+            clubAggregates[club].distTotal += s.distance;
+            clubAggregates[club].distMin = Math.min(clubAggregates[club].distMin, s.distance);
+            clubAggregates[club].distMax = Math.max(clubAggregates[club].distMax, s.distance);
+            clubDistances[club].push(s.distance);
+          }
+        });
+      } else if(h.club){
+        const club = h.club;
+        if(!clubAggregates[club]){
+          clubAggregates[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
+          clubDistances[club] = [];
+        }
+        clubAggregates[club].count++;
+        if(h.distanceShot){
+          clubAggregates[club].manualCount++;
+          clubAggregates[club].distTotal += h.distanceShot;
+          clubAggregates[club].distMin = Math.min(clubAggregates[club].distMin, h.distanceShot);
+          clubAggregates[club].distMax = Math.max(clubAggregates[club].distMax, h.distanceShot);
+          clubDistances[club].push(h.distanceShot);
+        }
       }
     });
   });
