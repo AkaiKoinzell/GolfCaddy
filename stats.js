@@ -2,7 +2,7 @@ if (!localStorage.getItem("uid")) {
   window.location.href = "home.html";
 }
 
-import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { collection, getDocs, query, where, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { initFirebase } from './firebase-config.js';
 import { calculateHandicap } from './handicap.js';
 
@@ -118,8 +118,12 @@ function drawTable(rounds){
       <td>${r.score}</td>
       <td>${netto !== '' ? (netto >= 0 ? '+' + netto : netto) : ''}</td>
       <td><a href="round.html?id=${r.id}">Dettagli</a></td>
+      <td><button class="delete-round" data-id="${r.id}">Elimina</button></td>
     `;
     tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.delete-round').forEach(btn => {
+    btn.addEventListener('click', () => deleteRound(btn.dataset.id));
   });
 }
 
@@ -233,6 +237,12 @@ function drawClubDistanceChart(distances){
     data:{ labels, datasets:[{ label:'Distanza (m)', data, backgroundColor:'#4682B4' }]},
     options:{ scales:{ y:{ beginAtZero:true } } }
   });
+}
+
+async function deleteRound(id){
+  if(!confirm('Eliminare il round?')) return;
+  await deleteDoc(doc(db, 'golf_rounds', id));
+  await loadStats();
 }
 
 function drawCharts(rounds, validRounds){
