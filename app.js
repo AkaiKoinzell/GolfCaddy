@@ -49,6 +49,22 @@ window.populateCourseOptions = function () {
     updateComboOptions();
   });
 };
+
+// Filter datalist options based on the current course input
+window.filterCourseOptions = function () {
+  const courseInput = document.getElementById("course");
+  const datalist = document.getElementById("course-options");
+  const filter = courseInput.value.toLowerCase();
+  datalist.innerHTML = "";
+
+  Object.keys(courses)
+    .filter(name => name.toLowerCase().includes(filter))
+    .forEach(name => {
+      const option = document.createElement("option");
+      option.value = name;
+      datalist.appendChild(option);
+    });
+};
 function updateHoleNumber() {
   document.getElementById("hole-number").textContent = currentHole;
 }
