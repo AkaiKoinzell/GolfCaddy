@@ -52,6 +52,8 @@ navigation links.
   `?uid=<id>`; shows handicap history and club statistics loaded from Firestore.
 - **clubs.html** – record individual club shots and see average distances for
   each club.
+- **search.html** – search for other players by name or email and look up golf
+  courses saved in Firestore.
 - **profile1.html** – manage your profile, clubs and your list of friends stored
   in Firestore.
 - **round.html** – display the details of a saved round.

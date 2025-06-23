@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <title>Pro Putt - Cerca</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="search-page">
+  <header>
+    <h1>Ricerca</h1>
+  </header>
+  <main class="container">
+    <section>
+      <h2>Cerca Utenti</h2>
+      <input type="text" id="search-user-input" class="form-control" placeholder="Nome o Email" />
+      <button class="btn btn-success mt-2" onclick="searchUsers()">Cerca</button>
+      <ul id="user-results" class="list-group mt-2"></ul>
+    </section>
+    <section class="mt-4">
+      <h2>Cerca Campi da Golf</h2>
+      <input type="text" id="search-course-input" class="form-control" placeholder="Nome del campo" />
+      <button class="btn btn-success mt-2" onclick="searchCourses()">Cerca</button>
+      <ul id="course-results" class="list-group mt-2"></ul>
+    </section>
+  </main>
+  <script src="navbar.js"></script>
+  <script type="module" src="search.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

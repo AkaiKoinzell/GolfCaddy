@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <a class="nav-link" href="home.html">🏠 Home</a>
         <a class="nav-link" href="index.html">➕ Round</a>
         <a class="nav-link" href="stats.html">📊 Statistiche</a>
+        <a class="nav-link" href="search.html">🔍 Cerca</a>
         <a class="nav-link" href="clubs.html">🏌️ Bastoni</a>
         <a class="nav-link" href="profile1.html">👤 Profilo</a>
       </div>
