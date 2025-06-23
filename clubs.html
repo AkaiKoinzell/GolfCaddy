@@ -5,64 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Statistiche Bastoni - Golf Tracker</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      background: #f0f0f0;
-      padding: 2rem;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    .form-section, .stats-section {
-      max-width: 600px;
-      margin: 2rem auto;
-      background: white;
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    label {
-      display: block;
-      margin-top: 1rem;
-    }
-
-    input, select, button {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
-      box-sizing: border-box;
-    }
-
-    .club-stats {
-      margin-top: 1.5rem;
-    }
-
-    .club-stats div {
-      margin-bottom: 1rem;
-      background: #e6ffe6;
-      padding: 1rem;
-      border-radius: 8px;
-    }
-
-    .club-stats h3 {
-      margin: 0 0 0.5rem 0;
-      color: #004d00;
-    }
-
-    .club-stats p {
-      margin: 0.3rem 0;
-    }
-  </style>
 </head>
-<body>
+<body class="clubs-page">
   <header>
     <h1>Statistiche Bastoni</h1>
   </header>
-  <nav>
+  <nav class="navbar">
     <a href="home.html">🏠 Home</a>
     <a href="index.html">➕ Round</a>
     <a href="stats.html">📊 Statistiche</a>
@@ -84,7 +32,7 @@
       <label for="notes-input">Note (opzionale):</label>
       <input type="text" id="notes-input" placeholder="Condizioni, vento, ecc." />
 
-      <button onclick="saveClubShot()">Salva Colpo</button>
+      <button class="btn" onclick="saveClubShot()">Salva Colpo</button>
     </div>
 
     <div class="stats-section">
