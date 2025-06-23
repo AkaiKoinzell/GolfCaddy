@@ -87,6 +87,14 @@
     </div>
   </section>
 
+  <section style="text-align:center;margin:2rem;">
+    <div style="font-size:1.2rem;font-weight:bold;">Il tuo Handicap</div>
+    <div id="hcp-value">--</div>
+    <div style="margin-top:1rem;color:#555;font-size:0.9rem;">
+      Calcolato come media dei migliori 8 score differential tra gli ultimi 20 round (WHS).
+    </div>
+  </section>
+
   <section style="max-width:800px;margin:2rem auto;">
     <label>Filtra:
       <select id="filter-format">
@@ -100,7 +108,11 @@
     </label>
   </section>
 
-  <aside class="chart-container"><h2>Handicap nel tempo</h2><canvas id="hcpChart"></canvas></aside>
+  <aside class="chart-container">
+    <h2>Handicap nel tempo</h2>
+    <canvas id="hcpChart"></canvas>
+  </aside>
+
   <section class="chart-container">
     <h2>Media Colpi per Tipo di Buca</h2>
     <table id="par-average-table">
@@ -110,43 +122,48 @@
       <tbody></tbody>
     </table>
   </section>
-  <section>
-  <h2>Statistiche per Club</h2>
 
-  <label for="club-filter">Filtra per club:</label>
-  <select id="club-filter">
-    <option value="all">Tutti i club</option>
-  </select>
+  <section class="chart-container">
+    <h2>% Putt sui colpi totali</h2>
+    <canvas id="puttChart"></canvas>
+  </section>
 
-  <div style="overflow-x: auto;">
-    <table id="club-stats-table" border="1" cellpadding="6" style="margin-top: 1rem; width: 100%; text-align: left;">
+  <section class="chart-container">
+    <h2>Statistiche per Club</h2>
+    <label for="club-filter">Filtra per club:</label>
+    <select id="club-filter">
+      <option value="all">Tutti i club</option>
+    </select>
+
+    <div style="overflow-x: auto;">
+      <table id="club-shots-table">
+        <thead>
+          <tr>
+            <th>Club</th>
+            <th>Numero colpi</th>
+            <th>Distanza media (m)</th>
+            <th>Distanza max (m)</th>
+            <th>Distanza min (m)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <canvas id="club-distance-chart" height="120" style="margin-top: 2rem;"></canvas>
+  </section>
+
+  <section class="chart-container">
+    <h2>Riepilogo Colpi per Club nel Tempo</h2>
+    <table id="club-summary-table">
       <thead>
-        <tr>
-          <th>Club</th>
-          <th>Numero colpi</th>
-          <th>Distanza media (m)</th>
-          <th>Distanza max (m)</th>
-          <th>Distanza min (m)</th>
-        </tr>
+        <tr><th>Data</th><th>Club</th><th># Colpi Totali</th><th># Usato</th><th>Media Colpi</th></tr>
       </thead>
       <tbody></tbody>
     </table>
-  </div>
+  </section>
 
-  <canvas id="club-distance-chart" height="120" style="margin-top: 2rem;"></canvas>
-</section>
   <section class="chart-container">
-  <h2>Riepilogo Colpi per Club nel Tempo</h2>
-  <table id="club-stats-table">
-    <thead>
-      <tr><th>Data</th><th>Club</th><th># Colpi Totali</th><th># Usato</th><th>Media Colpi</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
-  <aside class="chart-container"><h2>% Putt sui colpi totali</h2><canvas id="puttChart"></canvas></aside>
-
-  <section class="chart-container"><h2>Storico Round</h2>
+    <h2>Storico Round</h2>
     <table id="rounds-table">
       <thead>
         <tr>
