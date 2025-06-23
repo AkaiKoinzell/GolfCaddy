@@ -25,12 +25,27 @@ async function loadRound() {
   const info = document.getElementById("round-info");
   info.innerHTML = `
     <p><strong>Campo:</strong> ${escapeHTML(data.course)}</p>
-    <p><strong>Giocatore:</strong> ${escapeHTML(data.player)}</p>
+    ${data.players ? '' : `<p><strong>Giocatore:</strong> ${escapeHTML(data.player)}</p>`}
     <p id="round-notes"><strong>Note:</strong> ${escapeHTML(data.notes || "—")}</p>
     <h2>Buche</h2>
   `;
 
-  data.holes.forEach(hole => {
+  if(data.players){
+    const leaderboard = document.createElement('div');
+    leaderboard.innerHTML = '<h3>Leaderboard</h3>';
+    const ul = document.createElement('ul');
+    data.players.forEach(p => {
+      const total = (p.holes || []).reduce((a,h)=>a+(h.score||0),0);
+      const li = document.createElement('li');
+      li.textContent = `${p.name}: ${total}`;
+      ul.appendChild(li);
+    });
+    leaderboard.appendChild(ul);
+    info.appendChild(leaderboard);
+  }
+
+  const holes = data.holes || (data.players && data.players[0]?.holes) || [];
+  holes.forEach(hole => {
     const div = document.createElement("div");
     div.className = "hole";
     const shots = (hole.shots && hole.shots.length)

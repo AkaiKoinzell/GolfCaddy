@@ -27,6 +27,7 @@ let totalHoles = 9;
 let shotIndex = 0;
 let selectedHoles = [];
 const roundData = [];
+let playersScores = [];
 const DRAFT_KEY = 'roundDraft';
 let clubs = getStoredClubs() || [...defaultClubs];
 
@@ -47,10 +48,10 @@ onAuthStateChanged(auth, async (user) => {
     clubs = await loadClubs(uid);
     document.querySelectorAll('.club-select').forEach(sel => populateClubSelect(sel));
 
-    // Auto-riempi il campo player se è vuoto
-    const playerInput = document.getElementById("player");
-    if (playerInput && !playerInput.value) {
-      playerInput.value = userDisplayName || userEmail || "Giocatore";
+    // Auto-riempi il campo giocatori se è vuoto
+    const playersInput = document.getElementById("players");
+    if (playersInput && !playersInput.value) {
+      playersInput.value = userDisplayName || userEmail || "Giocatore";
     }
   }
 });
@@ -103,6 +104,7 @@ async function saveDraft() {
   const draft = {
     meta: window._roundMeta,
     roundData,
+    playersScores,
     currentHole,
     totalHoles,
     selectedHoles,
@@ -177,6 +179,19 @@ window.saveHole = async function () {
   };
 
   roundData.push(hole);
+  // store scores for all players
+  if(playersScores.length){
+    playersScores[0].holes.push({ score });
+    for(let i=1;i<playersScores.length;i++){
+      const val = parseInt(document.getElementById(`score-${i}`).value);
+      if(isNaN(val)){
+        alert("Inserisci tutti i punteggi dei giocatori.");
+        saveButton.disabled = false;
+        return;
+      }
+      playersScores[i].holes.push({ score: val });
+    }
+  }
 
   if (currentHole >= totalHoles) {
     // Evita salvataggi doppi
@@ -186,12 +201,13 @@ window.saveHole = async function () {
     }
 
     try {
-      const { course, layout, player, combo, cr, slope, totalPar, totalDistance } = window._roundMeta;
+      const { course, layout, players, combo, cr, slope, totalPar, totalDistance } = window._roundMeta;
       await addDoc(collection(db, "golf_rounds"), {
         timestamp: new Date().toISOString(),
         course,
         layout,
-        player,
+        player: players[0],
+        players: playersScores,
         combo,
         cr,
         slope,
@@ -229,6 +245,10 @@ function clearInputs() {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+  playersScores.slice(1).forEach((p, idx) => {
+    const el = document.getElementById(`score-${idx+1}`);
+    if(el) el.value = '';
+  });
   document.getElementById("fairway").value = "na";
   const container = document.getElementById('shots-container');
   container.innerHTML = '';
@@ -265,6 +285,22 @@ function addShotRow() {
   shotIndex++;
 }
 
+function createAdditionalPlayerInputs(names){
+  const container = document.getElementById('additional-player-scores');
+  if(!container) return;
+  container.innerHTML = '';
+  names.forEach((name, idx) => {
+    const i = idx + 1;
+    const div = document.createElement('div');
+    div.className = 'player-score';
+    div.innerHTML = `
+      <label for="score-${i}">Colpi ${name}:</label>
+      <input type="number" id="score-${i}" class="form-control" />
+    `;
+    container.appendChild(div);
+  });
+}
+
 async function checkForDraft() {
   let draftStr = localStorage.getItem(DRAFT_KEY);
   if (!draftStr && uid) {
@@ -289,7 +325,9 @@ async function checkForDraft() {
     roundData.length = 0;
     draft.roundData.forEach(h => roundData.push(h));
 
-    document.getElementById('player').value = draft.meta.player || '';
+    document.getElementById('players').value = (draft.meta.players || []).join(', ');
+    playersScores = draft.playersScores || (draft.meta.players || []).map(n => ({name: n, holes: []}));
+    createAdditionalPlayerInputs(playersScores.slice(1).map(p=>p.name));
     document.getElementById('course').value = draft.meta.course || '';
     updateLayoutOptions();
     document.getElementById('layout').value = draft.meta.layout || '';
@@ -391,7 +429,13 @@ window.startRound = function () {
   const holesSelect = document.getElementById("holes");
   const course = document.getElementById("course").value;
   const layout = document.getElementById("layout").value;
-  const player = document.getElementById("player").value;
+  const playersStr = document.getElementById("players").value;
+  const names = playersStr.split(',').map(n => n.trim()).filter(n => n);
+  if(names.length === 0){
+    names.push(userDisplayName || userEmail || "Giocatore");
+  }
+  playersScores = names.map(n => ({ name: n, holes: [] }));
+  const playerName = playersScores[0].name;
   const combo = document.getElementById("combo9")?.value;
 
   if (!course) {
@@ -399,7 +443,6 @@ window.startRound = function () {
   return;
 }
 
-const playerName = player || userDisplayName || userEmail || "Giocatore";
 
   totalHoles = parseInt(holesSelect.value);
   currentHole = 1;
@@ -469,10 +512,11 @@ const playerName = player || userDisplayName || userEmail || "Giocatore";
     totalDistance = selectedHoles.reduce((sum, h) => sum + h.distance, 0);
   }
 
-  window._roundMeta = { course, layout, player: playerName, combo, cr, slope, totalPar, totalDistance };
+  window._roundMeta = { course, layout, players: names, combo, cr, slope, totalPar, totalDistance };
 
   document.getElementById("start-round").style.display = "none";
   document.getElementById("hole-input").style.display = "block";
+  createAdditionalPlayerInputs(names.slice(1));
   updateHoleNumber();
   autoFillHoleData();
   saveDraft();
