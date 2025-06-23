@@ -327,7 +327,7 @@ function drawParAverages(rounds) {
       stats[key].uses += 1;
     });
   });
-  const tbody = document.querySelector('#club-summary-table tbody');
+  const tbody = document.querySelector('#club-shots-table tbody');
   tbody.innerHTML = '';
   Object.values(stats)
     .sort((a,b)=>new Date(a.date) - new Date(b.date) || a.club.localeCompare(b.club))
