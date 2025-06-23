@@ -186,9 +186,8 @@ function drawClubStats(rounds){
     opt.textContent = club;
     sel.appendChild(opt);
   });
-  sel.onchange = updateClubStatsDisplay;
-
   updateClubStatsDisplay();
+  renderClubDistanceChart(sel.value);
 }
 
 function updateClubStatsDisplay(){
@@ -205,10 +204,12 @@ function updateClubStatsDisplay(){
     tr.innerHTML = `<td>${club}</td><td>${s.count}</td><td>${avg}</td><td>${max}</td><td>${min}</td>`;
     tbody.appendChild(tr);
   });
+}
 
-  const distances = filter === 'all'
+function renderClubDistanceChart(club){
+  const distances = club === 'all'
     ? Object.values(clubDistances).flat()
-    : (clubDistances[filter] || []);
+    : (clubDistances[club] || []);
   drawClubDistanceChart(distances);
 }
 
@@ -278,3 +279,8 @@ function getWeek(date){
 }
 
 loadStats();
+
+document.getElementById('club-filter').addEventListener('change', e => {
+  updateClubStatsDisplay();
+  renderClubDistanceChart(e.target.value);
+});
