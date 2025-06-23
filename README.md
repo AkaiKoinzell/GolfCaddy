@@ -57,3 +57,13 @@ navigation links.
 
 Course definitions are now stored in a Firestore collection and can be
 managed through **admin.html**.
+
+## Navigation Bar
+
+The top navigation links are injected by `navbar.js`. Add the script tag below to any new page before your other JavaScript imports:
+
+```html
+<script src="navbar.js"></script>
+```
+
+This automatically inserts the shared `<nav class="navbar">` element so you don't have to repeat the markup in each file.
