@@ -98,7 +98,16 @@ async function loadFriends(){
   if(!currentUid) return;
   const q = collection(db, 'users', currentUid, 'friends');
   const snap = await getDocs(q);
-  friendList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  friendList = await Promise.all(snap.docs.map(async d => {
+    let name = d.id;
+    try {
+      const s = await getDoc(doc(db, 'users', d.id));
+      if(s.exists()) name = s.data().name || d.id;
+    } catch (e) {
+      console.error('Failed fetching friend name', e);
+    }
+    return { id: d.id, name, ...d.data() };
+  }));
   renderFriendList();
 }
 
@@ -109,7 +118,7 @@ function renderFriendList(){
   friendList.forEach(f => {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
-    li.textContent = f.id;
+    li.textContent = f.name || f.id;
     const actions = document.createElement('div');
     const view = document.createElement('a');
     view.className = 'btn btn-sm btn-primary me-2';
@@ -131,7 +140,14 @@ window.addFriend = async function(){
   const val = input.value.trim();
   if(!val || friendList.some(f => f.id === val)) return;
   await setDoc(doc(db, 'users', currentUid, 'friends', val), { since: new Date().toISOString() });
-  friendList.push({ id: val });
+  let name = val;
+  try {
+    const s = await getDoc(doc(db, 'users', val));
+    if(s.exists()) name = s.data().name || val;
+  } catch(e){
+    console.error('Failed fetching friend name', e);
+  }
+  friendList.push({ id: val, name });
   input.value = '';
   renderFriendList();
 }
