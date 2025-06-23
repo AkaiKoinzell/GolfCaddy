@@ -18,7 +18,7 @@ const uid = localStorage.getItem("uid");
 let allRounds = [], filters = { format: 'all', course: 'all', start: '', end: '' };
 let hcpChart, puttChart, clubDistanceChart, fwGirChart;
 let allShots = [];
-let clubAggregates = {}, clubDistances = {};
+let clubAggregates = {}, clubDistances = {}, clubStrokes = {};
 
 const styleVars = getComputedStyle(document.documentElement);
 const CHART_COLORS = {
@@ -30,6 +30,34 @@ const CHART_COLORS = {
   fw: styleVars.getPropertyValue('--chart-fw-color').trim() || '#1E90FF',
   gir: styleVars.getPropertyValue('--chart-gir-color').trim() || '#FF4500'
 };
+
+function expectedStrokes(distance){
+  const d = Math.max(0, distance);
+  return 2 + Math.sqrt(d/50);
+}
+
+function computeStrokesGained(){
+  clubStrokes = {};
+  allRounds.forEach(r => {
+    r.holes.forEach(h => {
+      let remaining = h.distance || 0;
+      const shotList = (h.shots && h.shots.length)
+        ? h.shots
+        : (h.distanceShot ? [{club:h.club || 'Altro', distance:h.distanceShot}] : []);
+      shotList.forEach(s => {
+        if(!s || typeof s.distance !== 'number') return;
+        const before = remaining;
+        const after = Math.max(remaining - s.distance, 0);
+        const sg = expectedStrokes(before) - (1 + expectedStrokes(after));
+        const club = s.club || 'Altro';
+        if(!clubStrokes[club]) clubStrokes[club] = {total:0,count:0};
+        clubStrokes[club].total += sg;
+        clubStrokes[club].count++;
+        remaining = after;
+      });
+    });
+  });
+}
 
 async function loadStats() {
   const q = query(collection(db, "golf_rounds"), where("uid", "==", uid));
@@ -240,6 +268,7 @@ function drawClubStats(rounds){
     opt.textContent = club;
     sel.appendChild(opt);
   });
+  computeStrokesGained();
   updateClubStatsDisplay();
   renderClubDistanceChart(sel.value);
 }
@@ -254,8 +283,9 @@ function updateClubStatsDisplay(){
     const avg = s.manualCount ? (s.distTotal / s.manualCount).toFixed(1) : '-';
     const max = s.manualCount ? s.distMax : '-';
     const min = s.manualCount ? s.distMin : '-';
+    const sg = clubStrokes[club] ? (clubStrokes[club].total / clubStrokes[club].count).toFixed(2) : '-';
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${club}</td><td>${s.count}</td><td>${avg}</td><td>${max}</td><td>${min}</td>`;
+    tr.innerHTML = `<td>${club}</td><td>${s.count}</td><td>${avg}</td><td>${max}</td><td>${min}</td><td>${sg}</td>`;
     tbody.appendChild(tr);
   });
 }
