@@ -1,10 +1,11 @@
 if (!localStorage.getItem("uid")) window.location.href = "home.html";
 
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { initFirebase } from './firebase-config.js';
 
 const { auth, db } = initFirebase();
-const uid = auth.currentUser?.uid;
+const uid = localStorage.getItem("uid");
+let roundData = null;
 
 const params = new URLSearchParams(window.location.search);
 const roundId = params.get("id");
@@ -13,12 +14,13 @@ async function loadRound() {
   const ref = doc(db, "golf_rounds", roundId);
   const snapshot = await getDoc(ref);
   const data = snapshot.data();
+  roundData = data;
 
   const info = document.getElementById("round-info");
   info.innerHTML = `
     <p><strong>Campo:</strong> ${data.course}</p>
     <p><strong>Giocatore:</strong> ${data.player}</p>
-    <p><strong>Note:</strong> ${data.notes || "—"}</p>
+    <p id="round-notes"><strong>Note:</strong> ${data.notes || "—"}</p>
     <h2>Buche</h2>
   `;
 
@@ -41,6 +43,29 @@ async function loadRound() {
       </div>`;
     info.appendChild(div);
   });
+
+  if(uid && uid === data.uid){
+    const actions = document.getElementById('round-actions');
+    actions.innerHTML = '<button id="edit-notes-btn">Modifica note</button><button id="delete-round-btn">Elimina round</button>';
+    document.getElementById('edit-notes-btn').addEventListener('click', updateNotes);
+    document.getElementById('delete-round-btn').addEventListener('click', deleteCurrentRound);
+  }
+}
+
+async function updateNotes(){
+  const newNotes = prompt('Modifica note', roundData.notes || '');
+  if(newNotes === null) return;
+  await updateDoc(doc(db, 'golf_rounds', roundId), { notes: newNotes });
+  roundData.notes = newNotes;
+  document.getElementById('round-notes').innerHTML = `<strong>Note:</strong> ${newNotes || '—'}`;
+  alert('Note aggiornate');
+}
+
+async function deleteCurrentRound(){
+  if(!confirm('Eliminare questo round?')) return;
+  await deleteDoc(doc(db, 'golf_rounds', roundId));
+  alert('Round eliminato');
+  window.location.href = 'stats.html';
 }
 
 loadRound();
