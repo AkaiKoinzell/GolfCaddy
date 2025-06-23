@@ -33,6 +33,8 @@ let playersScores = [];
 const DRAFT_KEY = 'roundDraft';
 let clubs = getStoredClubs() || [...defaultClubs];
 let friendList = [];
+let currentPlayerIndex = 0;
+let holeData = [];
 
 async function loadFriends() {
   if (!uid) return;
@@ -186,6 +188,8 @@ async function saveDraft() {
     meta: window._roundMeta,
     roundData,
     playersScores,
+    holeData,
+    currentPlayerIndex,
     currentHole,
     totalHoles,
     selectedHoles,
@@ -222,20 +226,10 @@ window.saveHole = async function () {
   const distance = parseInt(document.getElementById("distance").value);
   const scoreInput = document.getElementById("score");
   const scoreVal = scoreInput ? parseInt(scoreInput.value) : NaN;
+  saveCurrentPlayerData();
+
   const putts = parseInt(document.getElementById("putts").value);
   let penalties = parseInt(document.getElementById("penalties").value);
-  const shotRows = document.querySelectorAll('#shots-container .shot-row');
-  const shots = [];
-  shotRows.forEach(row => {
-    const club = row.querySelector('.club-select').value;
-    const distVal = parseInt(row.querySelector('.distance-input').value);
-    if (club || !isNaN(distVal)) {
-      shots.push({
-        club: club || null,
-        distance: isNaN(distVal) ? null : distVal
-      });
-    }
-  });
 
   if ([par, distance, putts].some(v => isNaN(v)) || (scoreInput && isNaN(scoreVal))) {
     alert("Compila tutti i campi numerici obbligatori con valori validi.");
@@ -247,35 +241,28 @@ window.saveHole = async function () {
     penalties = 0;
   }
 
-  const score = scoreInput ? scoreVal : shots.length + putts + (isNaN(penalties) ? 0 : penalties);
-
-  const hole = {
-    number: selectedHoles[currentHole - 1].number,
-    par,
-    distance,
-    score,
-    putts,
-    fairway: document.getElementById("fairway").value,
-    penalties,
-    shots,
-    club: shots[0]?.club || '',
-    distanceShot: shots[0] ? shots[0].distance : null
-  };
-
-  roundData.push(hole);
-  // store scores for all players
-  if(playersScores.length){
-    playersScores[0].holes.push({ score });
-    for(let i=1;i<playersScores.length;i++){
-      const val = parseInt(document.getElementById(`score-${i}`).value);
-      if(isNaN(val)){
-        alert("Inserisci tutti i punteggi dei giocatori.");
-        saveButton.disabled = false;
-        return;
-      }
-      playersScores[i].holes.push({ score: val });
+  holeData.forEach((data, idx) => {
+    const shots = data.shots || [];
+    const p = parseInt(data.putts);
+    const pen = parseInt(data.penalties);
+    const score = shots.length + (isNaN(p) ? 0 : p) + (isNaN(pen) ? 0 : pen);
+    const hole = {
+      number: selectedHoles[currentHole - 1].number,
+      par,
+      distance,
+      score,
+      putts: isNaN(p) ? 0 : p,
+      fairway: data.fairway,
+      penalties: isNaN(pen) ? 0 : pen,
+      shots,
+      club: shots[0]?.club || '',
+      distanceShot: shots[0] ? shots[0].distance : null
+    };
+    if(idx === 0) {
+      roundData.push(hole);
     }
-  }
+    playersScores[idx].holes.push({ score });
+  });
 
   if (currentHole >= totalHoles) {
     // Evita salvataggi doppi
@@ -318,6 +305,8 @@ window.saveHole = async function () {
     updateHoleNumber();
     clearInputs();
     autoFillHoleData();
+    resetHoleData();
+    loadCurrentPlayerData();
     saveButton.disabled = false; // riattiva per buche successive
     await saveDraft();
   }
@@ -328,10 +317,6 @@ function clearInputs() {
   ["par", "distance", "score", "putts", "penalties"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
-  });
-  playersScores.slice(1).forEach((p, idx) => {
-    const el = document.getElementById(`score-${idx+1}`);
-    if(el) el.value = '';
   });
   document.getElementById("fairway").value = "na";
   const container = document.getElementById('shots-container');
@@ -369,21 +354,50 @@ function addShotRow() {
   shotIndex++;
 }
 
-function createAdditionalPlayerInputs(names){
-  const container = document.getElementById('additional-player-scores');
-  if(!container) return;
-  container.innerHTML = '';
-  names.forEach((name, idx) => {
-    const i = idx + 1;
-    const div = document.createElement('div');
-    div.className = 'player-score';
-    div.innerHTML = `
-      <label for="score-${i}">Colpi ${name}:</label>
-      <input type="number" id="score-${i}" class="form-control" />
-    `;
-    container.appendChild(div);
+function saveCurrentPlayerData(){
+  if(!holeData[currentPlayerIndex]) return;
+  holeData[currentPlayerIndex].putts = document.getElementById('putts').value;
+  holeData[currentPlayerIndex].penalties = document.getElementById('penalties').value;
+  holeData[currentPlayerIndex].fairway = document.getElementById('fairway').value;
+  const shots = [];
+  document.querySelectorAll('#shots-container .shot-row').forEach(row=>{
+    const club = row.querySelector('.club-select').value;
+    const distVal = parseInt(row.querySelector('.distance-input').value);
+    if (club || !isNaN(distVal)) {
+      shots.push({ club: club || null, distance: isNaN(distVal) ? null : distVal });
+    }
   });
+  holeData[currentPlayerIndex].shots = shots;
 }
+
+function loadCurrentPlayerData(){
+  const data = holeData[currentPlayerIndex];
+  document.getElementById('putts').value = data.putts;
+  document.getElementById('penalties').value = data.penalties;
+  document.getElementById('fairway').value = data.fairway;
+  const container = document.getElementById('shots-container');
+  container.innerHTML = '';
+  shotIndex = 0;
+  if(data.shots && data.shots.length){
+    data.shots.forEach(s=>{
+      addShotRow();
+      const row = container.lastElementChild;
+      row.querySelector('.club-select').value = s.club || '';
+      if(s.distance !== null && s.distance !== undefined)
+        row.querySelector('.distance-input').value = s.distance;
+    });
+  } else {
+    addShotRow();
+  }
+}
+
+function resetHoleData(){
+  holeData = playersScores.map(() => ({ putts: '', penalties: '', fairway: 'na', shots: [] }));
+  currentPlayerIndex = 0;
+  const sel = document.getElementById('player-select');
+  if(sel) sel.value = '0';
+}
+
 
 async function checkForDraft() {
   let draftStr = localStorage.getItem(DRAFT_KEY);
@@ -411,7 +425,13 @@ async function checkForDraft() {
 
     document.getElementById('players').value = (draft.meta.players || []).join(', ');
     playersScores = draft.playersScores || (draft.meta.players || []).map(n => ({name: n, holes: []}));
-    createAdditionalPlayerInputs(playersScores.slice(1).map(p=>p.name));
+    holeData = draft.holeData || (draft.meta.players || []).map(() => ({ putts: '', penalties: '', fairway: 'na', shots: [] }));
+    currentPlayerIndex = draft.currentPlayerIndex || 0;
+    const sel = document.getElementById('player-select');
+    if(sel){
+      sel.innerHTML = playersScores.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('');
+      sel.value = String(currentPlayerIndex);
+    }
     document.getElementById('course').value = draft.meta.course || '';
     updateLayoutOptions();
     document.getElementById('layout').value = draft.meta.layout || '';
@@ -426,6 +446,7 @@ async function checkForDraft() {
     document.getElementById('hole-input').style.display = 'block';
     updateHoleNumber();
     autoFillHoleData();
+    loadCurrentPlayerData();
   } else {
     await deleteDraft();
   }
@@ -462,6 +483,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   const addBtn = document.getElementById('add-shot-btn');
   if(addBtn){
     addBtn.addEventListener('click', addShotRow);
+  }
+
+  const playerSel = document.getElementById('player-select');
+  if(playerSel){
+    playerSel.addEventListener('change', e => {
+      saveCurrentPlayerData();
+      currentPlayerIndex = parseInt(e.target.value);
+      loadCurrentPlayerData();
+    });
   }
 
   localStorage.removeItem("roundSaved"); // reset all'avvio
@@ -522,6 +552,13 @@ window.startRound = function () {
   }
   playersScores = names.map(n => ({ name: n, holes: [] }));
   const playerName = playersScores[0].name;
+  holeData = names.map(() => ({ putts: '', penalties: '', fairway: 'na', shots: [] }));
+  currentPlayerIndex = 0;
+  const sel = document.getElementById('player-select');
+  if(sel){
+    sel.innerHTML = names.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
+    sel.value = String(currentPlayerIndex);
+  }
   const combo = document.getElementById("combo9")?.value;
 
   if (!course) {
@@ -602,8 +639,8 @@ window.startRound = function () {
 
   document.getElementById("start-round").style.display = "none";
   document.getElementById("hole-input").style.display = "block";
-  createAdditionalPlayerInputs(names.slice(1));
   updateHoleNumber();
   autoFillHoleData();
+  loadCurrentPlayerData();
   saveDraft();
 };

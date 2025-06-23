@@ -11,5 +11,6 @@ export const clubs = [
   "9 Iron",
   "Pitching Wedge",
   "Sand Wedge",
-  "Lob Wedge"
+  "Lob Wedge",
+  "Putter"
 ];
