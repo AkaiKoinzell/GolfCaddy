@@ -1,6 +1,6 @@
-# GolfCaddy
+# Pro Putt
 
-GolfCaddy is a small web application for tracking golf rounds and club statistics.
+Pro Putt is a small web application for tracking golf rounds and club statistics.
 It uses Firebase for authentication and data storage and is written as
 client‑side ES modules.
 
