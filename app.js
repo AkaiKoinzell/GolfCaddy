@@ -7,6 +7,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { initFirebase, firebaseConfig } from './firebase-config.js';
 import { courses } from "./courses.js";
+import { clubs } from "./clubList.js";
 
 
 
@@ -148,8 +149,21 @@ function clearInputs() {
   document.getElementById("club").value = "";
 }
 
+function populateClubSelect() {
+  const sel = document.getElementById("club");
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Seleziona --</option>';
+  clubs.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   populateCourseOptions();
+  populateClubSelect();
   document.getElementById("course").addEventListener("input", () => {
     updateLayoutOptions();
     updateComboOptions();
