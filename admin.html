@@ -5,38 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestione Campi</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      padding: 1rem;
-      background: #f5f5f5;
-    }
-    form, #course-list {
-      max-width: 600px;
-      margin: 0 auto 2rem auto;
-    }
-    label {
-      display: block;
-      margin-top: 0.5rem;
-    }
-    input, textarea, button {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.2rem;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 0.5rem;
-    }
-    li button {
-      margin-left: 0.5rem;
-    }
-  </style>
 </head>
-<body>
+<body class="admin-page">
   <header>
     <h1>Gestione Campi</h1>
   </header>
-  <nav>
+  <nav class="navbar">
     <a href="home.html">🏠 Home</a>
   </nav>
   <main class="container">
@@ -47,7 +21,7 @@
       <label for="course-data">Dati (JSON)</label>
       <textarea id="course-data" rows="10"></textarea>
 
-      <button type="button" onclick="saveCourse()">Salva</button>
+      <button type="button" class="btn" onclick="saveCourse()">Salva</button>
     </form>
 
     <h2>Campi esistenti</h2>

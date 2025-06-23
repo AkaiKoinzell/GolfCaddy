@@ -5,51 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aggiungi Round - Golf Tracker</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      padding: 1rem;
-      background: #f5f5f5;
-    }
-    h2 {
-      margin-top: 1rem;
-    }
-    form, .round-inputs {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    label {
-      display: block;
-      margin-top: 0.5rem;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.2rem;
-      box-sizing: border-box;
-    }
-    .shot-row {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      margin-top: 0.5rem;
-    }
-    .shot-row label {
-      margin-top: 0;
-      width: auto;
-    }
-    .shot-row select, .shot-row input {
-      flex: 1;
-    }
-    #hole-input {
-      display: none;
-    }
-  </style>
 </head>
-<body>
+<body class="index-page">
   <header>
     <h1>Aggiungi Nuovo Round</h1>
   </header>
-  <nav>
+  <nav class="navbar">
     <a href="home.html">🏠 Home</a>
     <a href="stats.html">📊 Statistiche</a>
     <a href="clubs.html">🏌️ Bastoni</a>
@@ -57,7 +18,7 @@
   </nav>
 
   <main class="container">
-  <form id="start-round">
+  <form id="start-round" class="form-container">
     <label for="player">Il tuo nome:</label>
     <input type="text" id="player" />
 
@@ -74,7 +35,7 @@
       <option value="18">18</option>
     </select>
 
-    <div id="combo-9-select" style="display:none;">
+    <div id="combo-9-select" class="hidden">
       <label for="combo9">Seleziona combinazione 9 buche:</label>
       <select id="combo9"></select>
     </div>
@@ -82,10 +43,10 @@
     <label for="notes">Note (opzionale):</label>
     <input type="text" id="notes" />
 
-    <button type="button" onclick="startRound()">Inizia Round</button>
+    <button type="button" class="btn" onclick="startRound()">Inizia Round</button>
   </form>
 
-  <div id="hole-input">
+  <div id="hole-input" class="form-container">
     <h2>Buca <span id="hole-number">1</span></h2>
     <label for="par">Par:</label>
     <input type="number" id="par" />
@@ -120,9 +81,9 @@
         <input type="number" class="distance-input" />
       </div>
     </div>
-    <button type="button" id="add-shot-btn">Aggiungi colpo</button>
+    <button type="button" id="add-shot-btn" class="btn">Aggiungi colpo</button>
 
-    <button type="button" onclick="saveHole()">Salva Buca</button>
+    <button type="button" class="btn" onclick="saveHole()">Salva Buca</button>
   </div>
   </main>
 
