@@ -144,15 +144,6 @@
     <canvas id="club-distance-chart" height="120" style="margin-top: 2rem;"></canvas>
   </section>
 
-  <section class="chart-container">
-    <h2>Riepilogo Colpi per Club nel Tempo</h2>
-    <table id="club-summary-table">
-      <thead>
-        <tr><th>Data</th><th>Club</th><th># Colpi Totali</th><th># Usato</th><th>Media Colpi</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
 
   <section class="chart-container">
     <h2>Storico Round</h2>
@@ -384,35 +375,6 @@ function drawParAverages(rounds) {
         tbody.appendChild(tr);
       });
 
-      // summary per date
-      const summary = {};
-      rounds.forEach(r=>{
-        const date = formatDate(r.date);
-        r.holes.forEach(h=>{
-          if(!h.club) return;
-          const key = `${date}__${h.club}`;
-          if(!summary[key]) summary[key] = {date, club:h.club, totalShots:0, uses:0};
-          summary[key].totalShots += h.score;
-          summary[key].uses += 1;
-        });
-      });
-      allShots.forEach(s=>{
-        const date = formatDate(s.date);
-        const key = `${date}__${s.club}`;
-        if(!summary[key]) summary[key] = {date, club:s.club, totalShots:0, uses:0};
-        summary[key].uses += 1;
-      });
-
-      const tbody2 = document.querySelector('#club-summary-table tbody');
-      tbody2.innerHTML = '';
-      Object.values(summary)
-        .sort((a,b)=>new Date(a.date)-new Date(b.date) || a.club.localeCompare(b.club))
-        .forEach(s=>{
-          const avg = s.uses ? (s.totalShots / s.uses).toFixed(2) : '-';
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${s.date}</td><td>${s.club}</td><td>${s.totalShots}</td><td>${s.uses}</td><td>${avg}</td>`;
-          tbody2.appendChild(tr);
-        });
     }
     
    function drawCharts(rounds, validRounds) {
