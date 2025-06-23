@@ -3,6 +3,12 @@ if (!localStorage.getItem("uid")) window.location.href = "home.html";
 import { doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { initFirebase } from './firebase-config.js';
 
+function escapeHTML(text) {
+  const div = document.createElement('div');
+  div.textContent = text ?? '';
+  return div.innerHTML;
+}
+
 const { auth, db } = initFirebase();
 const uid = localStorage.getItem("uid");
 let roundData = null;
@@ -18,9 +24,9 @@ async function loadRound() {
 
   const info = document.getElementById("round-info");
   info.innerHTML = `
-    <p><strong>Campo:</strong> ${data.course}</p>
-    <p><strong>Giocatore:</strong> ${data.player}</p>
-    <p id="round-notes"><strong>Note:</strong> ${data.notes || "—"}</p>
+    <p><strong>Campo:</strong> ${escapeHTML(data.course)}</p>
+    <p><strong>Giocatore:</strong> ${escapeHTML(data.player)}</p>
+    <p id="round-notes"><strong>Note:</strong> ${escapeHTML(data.notes || "—")}</p>
     <h2>Buche</h2>
   `;
 
@@ -38,7 +44,7 @@ async function loadRound() {
         <p><strong>Putt:</strong> ${hole.putts}</p>
         <p><strong>Fairway:</strong> ${hole.fairway}</p>
         <p><strong>Penalità:</strong> ${hole.penalties}</p>
-        <p><strong>Club:</strong> ${hole.club || '—'}</p>
+        <p><strong>Club:</strong> ${escapeHTML(hole.club || '—')}</p>
         <p><strong>Distanza colpo:</strong> ${hole.distanceShot ? hole.distanceShot + ' m' : '—'}</p>
       </div>`;
     info.appendChild(div);
@@ -57,7 +63,7 @@ async function updateNotes(){
   if(newNotes === null) return;
   await updateDoc(doc(db, 'golf_rounds', roundId), { notes: newNotes });
   roundData.notes = newNotes;
-  document.getElementById('round-notes').innerHTML = `<strong>Note:</strong> ${newNotes || '—'}`;
+  document.getElementById('round-notes').innerHTML = `<strong>Note:</strong> ${escapeHTML(newNotes || '—')}`;
   alert('Note aggiornate');
 }
 
