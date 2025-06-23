@@ -35,6 +35,8 @@ async function loadRound() {
         <p><strong>Putt:</strong> ${hole.putts}</p>
         <p><strong>Fairway:</strong> ${hole.fairway}</p>
         <p><strong>Penalità:</strong> ${hole.penalties}</p>
+        <p><strong>Club:</strong> ${hole.club || '—'}</p>
+        <p><strong>Distanza colpo:</strong> ${hole.distanceShot ? hole.distanceShot + ' m' : '—'}</p>
       </div>`;
     info.appendChild(div);
   });
