@@ -21,6 +21,20 @@
     <label for="players">Giocatori (separati da virgola):</label>
     <input type="text" id="players" class="form-control" />
 
+    <label for="friend-select" class="mt-2">Aggiungi dagli amici:</label>
+    <div class="input-group mb-2">
+      <input type="text" id="friend-select" class="form-control" list="friend-options" placeholder="Nome amico" />
+      <button type="button" class="btn btn-secondary" onclick="addFriendPlayer()">Aggiungi</button>
+    </div>
+    <datalist id="friend-options"></datalist>
+
+    <label for="player-search-input" class="mt-2">Cerca altri giocatori:</label>
+    <div class="input-group mb-2">
+      <input type="text" id="player-search-input" class="form-control" placeholder="Nome o email" />
+      <button type="button" class="btn btn-secondary" onclick="searchPlayers()">Cerca</button>
+    </div>
+    <ul id="player-search-results" class="list-group mb-2"></ul>
+
     <label for="course">Nome del campo (scrivi per cercare):</label>
     <input type="text" id="course" class="form-control" list="course-options" oninput="filterCourseOptions()" />
     <datalist id="course-options"></datalist>

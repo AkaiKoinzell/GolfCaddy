@@ -5,7 +5,9 @@ import {
   getDoc,
   getDocs,
   deleteDoc,
-  doc
+  doc,
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import {
   onAuthStateChanged
@@ -30,6 +32,84 @@ const roundData = [];
 let playersScores = [];
 const DRAFT_KEY = 'roundDraft';
 let clubs = getStoredClubs() || [...defaultClubs];
+let friendList = [];
+
+async function loadFriends() {
+  if (!uid) return;
+  try {
+    const q = collection(db, 'users', uid, 'friends');
+    const snap = await getDocs(q);
+    friendList = await Promise.all(snap.docs.map(async d => {
+      let name = d.id;
+      try {
+        const s = await getDoc(doc(db, 'users', d.id));
+        if (s.exists()) name = s.data().name || d.id;
+      } catch (e) {
+        console.warn('Failed fetching friend name', e);
+      }
+      return { id: d.id, name };
+    }));
+    populateFriendOptions();
+  } catch (e) {
+    console.warn('Failed to load friends', e);
+  }
+}
+
+function populateFriendOptions() {
+  const list = document.getElementById('friend-options');
+  if (!list) return;
+  list.innerHTML = '';
+  friendList.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.name;
+    list.appendChild(opt);
+  });
+}
+
+function addPlayerName(name) {
+  const input = document.getElementById('players');
+  if (!input) return;
+  const current = input.value.split(',').map(n => n.trim()).filter(n => n);
+  if (!current.includes(name)) {
+    current.push(name);
+    input.value = current.join(', ');
+  }
+}
+
+window.addFriendPlayer = function () {
+  const input = document.getElementById('friend-select');
+  const name = input.value.trim();
+  if (name) {
+    addPlayerName(name);
+    input.value = '';
+  }
+};
+
+window.searchPlayers = async function () {
+  const term = document.getElementById('player-search-input').value.trim();
+  const list = document.getElementById('player-search-results');
+  list.innerHTML = '';
+  if (!term) return;
+  let q;
+  if (term.includes('@')) {
+    q = query(collection(db, 'users'), where('email', '==', term));
+  } else {
+    q = query(collection(db, 'users'), where('name', '>=', term), where('name', '<=', term + '\uf8ff'));
+  }
+  const snap = await getDocs(q);
+  snap.forEach(d => {
+    const data = d.data();
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.textContent = data.name || data.email || d.id;
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm btn-success';
+    btn.textContent = 'Aggiungi';
+    btn.onclick = () => addPlayerName(data.name || data.email || d.id);
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+};
 
 async function loadCourses() {
   const snap = await getDocs(collection(db, 'courses'));
@@ -47,6 +127,7 @@ onAuthStateChanged(auth, async (user) => {
 
     clubs = await loadClubs(uid);
     document.querySelectorAll('.club-select').forEach(sel => populateClubSelect(sel));
+    await loadFriends();
 
     // Auto-riempi il campo giocatori se è vuoto
     const playersInput = document.getElementById("players");
@@ -354,9 +435,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (storedUid) {
       uid = storedUid;
       clubs = await loadClubs(uid);
+      await loadFriends();
     }
   } else {
     clubs = await loadClubs(uid);
+    await loadFriends();
   }
   populateCourseOptions();
   shotIndex = document.querySelectorAll('#shots-container .shot-row').length;
