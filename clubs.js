@@ -11,6 +11,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { initFirebase } from './firebase-config.js';
+import { clubs } from './clubList.js';
 
 
 const { app, auth, db } = initFirebase();
@@ -135,3 +136,19 @@ window.saveClubShot = async function () {
     alert("Errore nel salvataggio: " + error.message);
   }
 }
+
+function populateClubSelect() {
+  const sel = document.getElementById("club-select");
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Seleziona --</option>';
+  clubs.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  populateClubSelect();
+});
