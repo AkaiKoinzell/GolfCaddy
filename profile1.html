@@ -26,6 +26,16 @@
 
       <button class="btn btn-success" onclick="saveProfile()">Salva Profilo</button>
     </div>
+
+    <h2 class="mt-2">I miei Bastoni</h2>
+    <div class="profile-section">
+      <label for="new-club">Nuovo Bastone:</label>
+      <input type="text" id="new-club" class="form-control" placeholder="Es. 7 Iron" />
+      <button class="btn btn-success mt-2" onclick="addClub()">Aggiungi</button>
+
+      <ul id="clubs-list" class="list-group mt-2"></ul>
+      <button class="btn btn-success mt-2" onclick="saveClubSettings()">Salva Bastoni</button>
+    </div>
   </main>
 
 <script src="navbar.js"></script>
