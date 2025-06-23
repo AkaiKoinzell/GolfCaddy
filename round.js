@@ -3,7 +3,8 @@ if (!localStorage.getItem("uid")) window.location.href = "home.html";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { initFirebase } from './firebase-config.js';
 
-const { db } = initFirebase();
+const { auth, db } = initFirebase();
+const uid = auth.currentUser?.uid;
 
 const params = new URLSearchParams(window.location.search);
 const roundId = params.get("id");
