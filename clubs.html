@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Golf Tracker - Clubs</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    header {
+      background-color: #006400;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    h2 {
+      text-align: center;
+      color: #006400;
+      margin-top: 2rem;
+    }
+
+    .club-container {
+      max-width: 500px;
+      margin: 2rem auto;
+      background-color: white;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .club-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .club-label {
+      width: 50px;
+      font-weight: bold;
+      color: #006400;
+    }
+
+    .bar {
+      flex: 1;
+      height: 24px;
+      background-color: #d0f0c0;
+      border-radius: 12px;
+      position: relative;
+      margin-left: 1rem;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background-color: #32cd32;
+      border-radius: 12px;
+    }
+
+    .bar-distance {
+      position: absolute;
+      right: 10px;
+      top: 2px;
+      font-size: 0.8rem;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Le Tue Distanze per Club</h1>
+  </header>
+   <nav>
+    <a href="home.html">Home</a>
+    <a href="index.html">Aggiungi Round</a>
+    <a href="stats.html">Statistiche</a>
+    <a href="profile1.html">Profilo</a>
+  </nav>
+
+  <h2>Ultimi 100 Colpi</h2>
+  <div class="club-container" id="clubData">
+    <!-- Dati verranno inseriti via JS -->
+  </div>
+
+  <script>
+    // Distanze fittizie, da sostituire con dati reali da Firestore
+    const clubStats = [
+      { club: "Dr", avgDistance: 274 },
+      { club: "3w", avgDistance: 233 },
+      { club: "2h", avgDistance: 219 },
+      { club: "4i", avgDistance: 198 },
+      { club: "5i", avgDistance: 188 },
+      { club: "6i", avgDistance: 179 },
+      { club: "7i", avgDistance: 172 },
+      { club: "8i", avgDistance: 152 },
+      { club: "9i", avgDistance: 143 },
+      { club: "P", avgDistance: 132 }
+    ];
+
+    const maxDistance = Math.max(...clubStats.map(c => c.avgDistance));
+    const container = document.getElementById("clubData");
+
+    clubStats.forEach(stat => {
+      const barWidth = (stat.avgDistance / maxDistance) * 100;
+      const bar = document.createElement("div");
+      bar.classList.add("club-bar");
+      bar.innerHTML = `
+        <div class="club-label">${stat.club}</div>
+        <div class="bar">
+          <div class="bar-fill" style="width: ${barWidth}%"></div>
+          <div class="bar-distance">${stat.avgDistance} yds</div>
+        </div>
+      `;
+      container.appendChild(bar);
+    });
+  </script>
+</body>
+</html>
