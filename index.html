@@ -78,18 +78,20 @@
       <input type="number" id="score" class="form-control" />
     </div>
 
-    <label for="putts">Numero di putt:</label>
-    <input type="number" id="putts" class="form-control" />
+    <div id="live-fields" class="hidden">
+      <label for="putts">Numero di putt:</label>
+      <input type="number" id="putts" class="form-control" />
 
-    <label for="fairway">Fairway colpito:</label>
-    <select id="fairway" class="form-select">
-      <option value="na">N/A</option>
-      <option value="yes">Sì</option>
-      <option value="no">No</option>
-    </select>
+      <label for="fairway">Fairway colpito:</label>
+      <select id="fairway" class="form-select">
+        <option value="na">N/A</option>
+        <option value="yes">Sì</option>
+        <option value="no">No</option>
+      </select>
 
-    <label for="penalties">Penalità:</label>
-    <input type="number" id="penalties" class="form-control" />
+      <label for="penalties">Penalità:</label>
+      <input type="number" id="penalties" class="form-control" />
+    </div>
 
   <div id="shots-container">
     <div class="shot-row">
@@ -115,14 +117,17 @@
     function toggleLiveMode() {
       const live = document.getElementById('live-mode').checked;
       const group = document.getElementById('score-group');
+      const liveFields = document.getElementById('live-fields');
       const score = document.getElementById('score');
       if (live) {
         if (group) group.style.display = 'none';
         if (score) score.removeAttribute('id');
+        if (liveFields) liveFields.style.display = 'block';
       } else {
         if (group) group.style.display = 'block';
         const hidden = document.querySelector('#score-group input');
         if (hidden && !hidden.id) hidden.id = 'score';
+        if (liveFields) liveFields.style.display = 'none';
       }
     }
     document.addEventListener('DOMContentLoaded', toggleLiveMode);
