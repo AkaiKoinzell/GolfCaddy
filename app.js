@@ -1,6 +1,10 @@
 import {
   collection,
-  addDoc
+  addDoc,
+  setDoc,
+  getDoc,
+  deleteDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import {
   onAuthStateChanged
@@ -20,6 +24,7 @@ let currentHole = 1;
 let totalHoles = 9;
 let selectedHoles = [];
 const roundData = [];
+const DRAFT_KEY = 'roundDraft';
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -79,6 +84,38 @@ function autoFillHoleData() {
   }
 }
 
+async function saveDraft() {
+  const draft = {
+    meta: window._roundMeta,
+    roundData,
+    currentHole,
+    totalHoles,
+    selectedHoles,
+    notesValue: document.getElementById('notes')?.value || '',
+    uid,
+    timestamp: new Date().toISOString()
+  };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  if (uid) {
+    try {
+      await setDoc(doc(db, 'round_drafts', uid), draft);
+    } catch (e) {
+      console.warn('Unable to sync draft', e);
+    }
+  }
+}
+
+async function deleteDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+  if (uid) {
+    try {
+      await deleteDoc(doc(db, 'round_drafts', uid));
+    } catch (e) {
+      console.warn('Unable to delete remote draft', e);
+    }
+  }
+}
+
 window.saveHole = async function () {
   const saveButton = document.querySelector("button[onclick='saveHole()']");
   saveButton.disabled = true; // blocca subito il doppio click
@@ -125,11 +162,14 @@ window.saveHole = async function () {
 
       localStorage.setItem("roundSaved", "true"); // flag per evitare duplicati
 
+      await deleteDraft();
+
       alert("Round completato! I dati sono stati salvati online.");
       setTimeout(() => location.reload(), 1000); // delay per evitare race conditions
     } catch (error) {
       alert("Errore nel salvataggio su Firebase: " + error.message);
       saveButton.disabled = false; // riattiva in caso di errore
+      await saveDraft();
     }
   } else {
     currentHole++;
@@ -137,6 +177,7 @@ window.saveHole = async function () {
     clearInputs();
     autoFillHoleData();
     saveButton.disabled = false; // riattiva per buche successive
+    await saveDraft();
   }
 };
 
@@ -161,7 +202,51 @@ function populateClubSelect() {
   });
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+async function checkForDraft() {
+  let draftStr = localStorage.getItem(DRAFT_KEY);
+  if (!draftStr && uid) {
+    try {
+      const snap = await getDoc(doc(db, 'round_drafts', uid));
+      if (snap.exists()) {
+        draftStr = JSON.stringify(snap.data());
+      }
+    } catch (e) {
+      console.warn('Unable to fetch remote draft', e);
+    }
+  }
+  if (!draftStr) return;
+  const draft = JSON.parse(draftStr);
+  if (!draft.roundData || !draft.meta) return;
+
+  if (confirm('Riprendere il round incompleto?')) {
+    window._roundMeta = draft.meta;
+    totalHoles = draft.totalHoles;
+    currentHole = draft.currentHole;
+    selectedHoles = draft.selectedHoles || [];
+    roundData.length = 0;
+    draft.roundData.forEach(h => roundData.push(h));
+
+    document.getElementById('player').value = draft.meta.player || '';
+    document.getElementById('course').value = draft.meta.course || '';
+    updateLayoutOptions();
+    document.getElementById('layout').value = draft.meta.layout || '';
+    document.getElementById('holes').value = String(draft.totalHoles);
+    if (draft.meta.combo) {
+      updateComboOptions();
+      document.getElementById('combo9').value = draft.meta.combo;
+    }
+    document.getElementById('notes').value = draft.notesValue || '';
+
+    document.getElementById('start-round').style.display = 'none';
+    document.getElementById('hole-input').style.display = 'block';
+    updateHoleNumber();
+    autoFillHoleData();
+  } else {
+    await deleteDraft();
+  }
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
   populateCourseOptions();
   populateClubSelect();
   document.getElementById("course").addEventListener("input", () => {
@@ -171,6 +256,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("holes").addEventListener("change", updateComboOptions);
 
   localStorage.removeItem("roundSaved"); // reset all'avvio
+  await checkForDraft();
 });
 window.updateLayoutOptions = function () {
   const course = document.getElementById("course").value;
@@ -304,4 +390,5 @@ const playerName = player || userDisplayName || userEmail || "Giocatore";
   document.getElementById("hole-input").style.display = "block";
   updateHoleNumber();
   autoFillHoleData();
+  saveDraft();
 };
