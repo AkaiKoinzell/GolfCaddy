@@ -20,6 +20,17 @@ let hcpChart, puttChart, clubDistanceChart, fwGirChart;
 let allShots = [];
 let clubAggregates = {}, clubDistances = {};
 
+const styleVars = getComputedStyle(document.documentElement);
+const CHART_COLORS = {
+  distance: styleVars.getPropertyValue('--accent-color').trim() || '#4682B4',
+  putt: styleVars.getPropertyValue('--chart-putt-color').trim() || '#32CD32',
+  bar18: styleVars.getPropertyValue('--chart-18-color').trim() || '#006400',
+  bar9: styleVars.getPropertyValue('--chart-9-color').trim() || '#32CD32',
+  hcp: styleVars.getPropertyValue('--chart-hcp-color').trim() || '#FFA500',
+  fw: styleVars.getPropertyValue('--chart-fw-color').trim() || '#1E90FF',
+  gir: styleVars.getPropertyValue('--chart-gir-color').trim() || '#FF4500'
+};
+
 async function loadStats() {
   const q = query(collection(db, "golf_rounds"), where("uid", "==", uid));
   const snap = await getDocs(q);
@@ -269,7 +280,7 @@ function drawClubDistanceChart(distances){
   const data = keys.map(k=>bins[k]);
   clubDistanceChart = new Chart(document.getElementById('club-distance-chart'),{
     type:'bar',
-    data:{ labels, datasets:[{ label:'Distanza (m)', data, backgroundColor:'#4682B4' }]},
+    data:{ labels, datasets:[{ label:'Distanza (m)', data, backgroundColor:CHART_COLORS.distance }]},
     options:{ scales:{ y:{ beginAtZero:true } } }
   });
 }
@@ -287,7 +298,7 @@ function drawCharts(rounds, validRounds){
   if(puttChart) puttChart.destroy();
   puttChart = new Chart(document.getElementById('puttChart'), {
     type:'bar',
-    data:{ labels, datasets:[{ label:'% Putt', data: puttPct, backgroundColor:'#32CD32' }]},
+    data:{ labels, datasets:[{ label:'% Putt', data: puttPct, backgroundColor:CHART_COLORS.putt }]},
     options:{ scales:{ y:{ beginAtZero:true, max:100 } } }
   });
 
@@ -306,9 +317,9 @@ function drawCharts(rounds, validRounds){
     data:{
       labels: allLabels,
       datasets:[
-        { label:'18 buche', data:data18, backgroundColor:'#006400' },
-        { label:'9 buche', data:data9, backgroundColor:'#32CD32' },
-        { label:'Valido per Handicap', type:'line', data:hcpData, borderColor:'#FFA500', borderWidth:2, fill:false, tension:0.3 }
+        { label:'18 buche', data:data18, backgroundColor:CHART_COLORS.bar18 },
+        { label:'9 buche', data:data9, backgroundColor:CHART_COLORS.bar9 },
+        { label:'Valido per Handicap', type:'line', data:hcpData, borderColor:CHART_COLORS.hcp, borderWidth:2, fill:false, tension:0.3 }
       ]
     },
     options:{ responsive:true, plugins:{ legend:{ position:'top' } } }
@@ -335,8 +346,8 @@ function drawFwGirChart(rounds){
     data:{
       labels,
       datasets:[
-        { label:'% Fairway', data:fwPct, borderColor:'#1E90FF', fill:false },
-        { label:'% GIR', data:girPct, borderColor:'#FF4500', fill:false }
+        { label:'% Fairway', data:fwPct, borderColor:CHART_COLORS.fw, fill:false },
+        { label:'% GIR', data:girPct, borderColor:CHART_COLORS.gir, fill:false }
       ]
     },
     options:{ scales:{ y:{ beginAtZero:true, max:100 } } }
