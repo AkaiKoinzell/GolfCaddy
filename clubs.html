@@ -70,28 +70,30 @@
     <a href="profile1.html">👤 Profilo</a>
   </nav>
 
-  <div class="form-section">
-    <h2>Registra un colpo</h2>
-    <label for="club-select">Bastone:</label>
-    <select id="club-select">
-      <option value="">-- Seleziona --</option>
-    </select>
+  <main class="container">
+    <div class="form-section">
+      <h2>Registra un colpo</h2>
+      <label for="club-select">Bastone:</label>
+      <select id="club-select">
+        <option value="">-- Seleziona --</option>
+      </select>
 
-    <label for="distance-input">Distanza (metri):</label>
-    <input type="number" id="distance-input" placeholder="Es. 145"/>
+      <label for="distance-input">Distanza (metri):</label>
+      <input type="number" id="distance-input" placeholder="Es. 145"/>
 
-    <label for="notes-input">Note (opzionale):</label>
-    <input type="text" id="notes-input" placeholder="Condizioni, vento, ecc." />
+      <label for="notes-input">Note (opzionale):</label>
+      <input type="text" id="notes-input" placeholder="Condizioni, vento, ecc." />
 
-    <button onclick="saveClubShot()">Salva Colpo</button>
-  </div>
-
-  <div class="stats-section">
-    <h2>Statistiche per Bastone</h2>
-    <div class="club-stats" id="club-stats">
-      <p>Caricamento statistiche...</p>
+      <button onclick="saveClubShot()">Salva Colpo</button>
     </div>
-  </div>
+
+    <div class="stats-section">
+      <h2>Statistiche per Bastone</h2>
+      <div class="club-stats" id="club-stats">
+        <p>Caricamento statistiche...</p>
+      </div>
+    </div>
+  </main>
 
   <script type="module" src="clubs.js"></script>
 </body>
