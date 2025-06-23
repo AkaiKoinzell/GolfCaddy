@@ -71,64 +71,6 @@
     <button onclick="saveProfile()">Salva Profilo</button>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
-      authDomain: "golfcaddy-ec421.firebaseapp.com",
-      projectId: "golfcaddy-ec421",
-      storageBucket: "golfcaddy-ec421.appspot.com",
-      messagingSenderId: "497160592489",
-      appId: "1:497160592489:web:548701ab6d395e579456f8",
-      measurementId: "G-XGBVHR0BD5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    let currentUid = null;
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "home.html";
-        return;
-      }
-
-      currentUid = user.uid;
-
-      const userRef = doc(db, "users", currentUid);
-      const snap = await getDoc(userRef);
-      if (snap.exists()) {
-        const data = snap.data();
-        document.getElementById("name").value = data.name || "";
-        document.getElementById("email").value = data.email || "";
-        document.getElementById("hcp").value = data.officialHandicap ?? "";
-      }
-    });
-
-    window.saveProfile = async function () {
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const hcp = document.getElementById("hcp").value;
-
-      if (!currentUid) {
-        alert("Utente non autenticato.");
-        return;
-      }
-
-      const userRef = doc(db, "users", currentUid);
-      await setDoc(userRef, {
-        name,
-        email,
-        officialHandicap: hcp === "" ? null : parseFloat(hcp)
-      }, { merge: true });
-
-      alert("Profilo aggiornato con successo!");
-    }
-  </script>
+  <script type="module" src="profile.js"></script>
 </body>
 </html>
