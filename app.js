@@ -129,20 +129,35 @@ window.saveHole = async function () {
   const saveButton = document.querySelector("button[onclick='saveHole()']");
   saveButton.disabled = true; // blocca subito il doppio click
 
+  const par = parseInt(document.getElementById("par").value);
+  const distance = parseInt(document.getElementById("distance").value);
+  const score = parseInt(document.getElementById("score").value);
+  const putts = parseInt(document.getElementById("putts").value);
+  let penalties = parseInt(document.getElementById("penalties").value);
+  const distanceShotVal = parseInt(document.getElementById("distanceShot").value);
+
+  if ([par, distance, score, putts].some(v => isNaN(v))) {
+    alert("Compila tutti i campi numerici obbligatori con valori validi.");
+    saveButton.disabled = false;
+    return;
+  }
+
+  if (isNaN(penalties)) {
+    penalties = 0;
+  }
+
   const hole = {
     number: selectedHoles[currentHole - 1].number,
-    par: parseInt(document.getElementById("par").value),
-    distance: parseInt(document.getElementById("distance").value),
-    score: parseInt(document.getElementById("score").value),
-    putts: parseInt(document.getElementById("putts").value),
+    par,
+    distance,
+    score,
+    putts,
     fairway: document.getElementById("fairway").value,
-    penalties: parseInt(document.getElementById("penalties").value),
+    penalties,
     club: document.getElementById("club").value,
-    distanceShot: (() => {
-      const v = parseInt(document.getElementById("distanceShot").value);
-      return isNaN(v) ? null : v;
-    })()
+    distanceShot: isNaN(distanceShotVal) ? null : distanceShotVal
   };
+
   roundData.push(hole);
 
   if (currentHole >= totalHoles) {
