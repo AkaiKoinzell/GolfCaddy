@@ -10,8 +10,9 @@ const { db } = initFirebase();
 const uid = localStorage.getItem("uid");
 
 let allRounds = [], filters = { format: 'all', course: 'all' };
-let hcpChart, puttChart;
+let hcpChart, puttChart, clubDistanceChart;
 let allShots = [];
+let clubAggregates = {}, clubDistances = {};
 
 async function loadStats() {
   const q = query(collection(db, "golf_rounds"), where("uid", "==", uid));
@@ -142,55 +143,94 @@ function drawParAverages(rounds){
 }
 
 function drawClubStats(rounds){
-  const aggregate = {};
+  clubAggregates = {};
+  clubDistances = {};
   allShots.forEach(s => {
     const club = s.club || 'Altro';
-    if(!aggregate[club]) {
-      aggregate[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
+    if(!clubAggregates[club]) {
+      clubAggregates[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
+      clubDistances[club] = [];
     }
-    aggregate[club].count++;
-    aggregate[club].manualCount++;
-    aggregate[club].distTotal += s.distance || 0;
-    aggregate[club].distMin = Math.min(aggregate[club].distMin, s.distance || 0);
-    aggregate[club].distMax = Math.max(aggregate[club].distMax, s.distance || 0);
+    clubAggregates[club].count++;
+    clubAggregates[club].manualCount++;
+    clubAggregates[club].distTotal += s.distance || 0;
+    clubAggregates[club].distMin = Math.min(clubAggregates[club].distMin, s.distance || 0);
+    clubAggregates[club].distMax = Math.max(clubAggregates[club].distMax, s.distance || 0);
+    if(s.distance) clubDistances[club].push(s.distance);
   });
 
   rounds.forEach(r=>{
     r.holes.forEach(h=>{
       if(!h.club) return;
       const club = h.club;
-      if(!aggregate[club]) {
-        aggregate[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
+      if(!clubAggregates[club]) {
+        clubAggregates[club] = { count:0, distTotal:0, distMin:Infinity, distMax:0, manualCount:0 };
+        clubDistances[club] = [];
       }
-      aggregate[club].count++;
+      clubAggregates[club].count++;
       if(h.distanceShot){
-        aggregate[club].manualCount++;
-        aggregate[club].distTotal += h.distanceShot;
-        aggregate[club].distMin = Math.min(aggregate[club].distMin, h.distanceShot);
-        aggregate[club].distMax = Math.max(aggregate[club].distMax, h.distanceShot);
+        clubAggregates[club].manualCount++;
+        clubAggregates[club].distTotal += h.distanceShot;
+        clubAggregates[club].distMin = Math.min(clubAggregates[club].distMin, h.distanceShot);
+        clubAggregates[club].distMax = Math.max(clubAggregates[club].distMax, h.distanceShot);
+        clubDistances[club].push(h.distanceShot);
       }
     });
   });
 
   const sel = document.getElementById('club-filter');
   sel.innerHTML = '<option value="all">Tutti i club</option>';
-  Object.keys(aggregate).sort().forEach(club => {
+  Object.keys(clubAggregates).sort().forEach(club => {
     const opt = document.createElement('option');
     opt.value = club;
     opt.textContent = club;
     sel.appendChild(opt);
   });
+  sel.onchange = updateClubStatsDisplay;
 
+  updateClubStatsDisplay();
+}
+
+function updateClubStatsDisplay(){
+  const filter = document.getElementById('club-filter').value;
   const tbody = document.querySelector('#club-shots-table tbody');
   tbody.innerHTML = '';
-  Object.keys(aggregate).sort().forEach(club => {
-    const s = aggregate[club];
+  Object.keys(clubAggregates).sort().forEach(club => {
+    if(filter !== 'all' && club !== filter) return;
+    const s = clubAggregates[club];
     const avg = s.manualCount ? (s.distTotal / s.manualCount).toFixed(1) : '-';
     const max = s.manualCount ? s.distMax : '-';
     const min = s.manualCount ? s.distMin : '-';
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${club}</td><td>${s.count}</td><td>${avg}</td><td>${max}</td><td>${min}</td>`;
     tbody.appendChild(tr);
+  });
+
+  const distances = filter === 'all'
+    ? Object.values(clubDistances).flat()
+    : (clubDistances[filter] || []);
+  drawClubDistanceChart(distances);
+}
+
+function drawClubDistanceChart(distances){
+  if(clubDistanceChart){
+    clubDistanceChart.destroy();
+    clubDistanceChart = null;
+  }
+  if(!distances || !distances.length) return;
+  const binSize = 10;
+  const bins = {};
+  distances.forEach(d=>{
+    const b = Math.floor(d/binSize)*binSize;
+    bins[b] = (bins[b]||0)+1;
+  });
+  const keys = Object.keys(bins).sort((a,b)=>a-b);
+  const labels = keys.map(k=>`${k}-${Number(k)+binSize-1}`);
+  const data = keys.map(k=>bins[k]);
+  clubDistanceChart = new Chart(document.getElementById('club-distance-chart'),{
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Distanza (m)', data, backgroundColor:'#4682B4' }]},
+    options:{ scales:{ y:{ beginAtZero:true } } }
   });
 }
 
