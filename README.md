@@ -48,12 +48,12 @@ navigation links.
   navigation to the rest of the app.
 - **index.html** – start a new round. Select a course and record scores for each
   hole; the data is saved to Firestore when the round is completed.
-- **stats.html** – view personal statistics such as handicap calculation, score
-  history and club statistics. Data is loaded from Firestore.
+- **stats.html** – view personal statistics or those of a friend using
+  `?uid=<id>`; shows handicap history and club statistics loaded from Firestore.
 - **clubs.html** – record individual club shots and see average distances for
   each club.
-- **profile1.html** – manage your personal profile information stored in
-  Firestore.
+- **profile1.html** – manage your profile, clubs and your list of friends stored
+  in Firestore.
 - **round.html** – display the details of a saved round.
 - **admin.html** – create or edit course definitions stored in Firestore.
 

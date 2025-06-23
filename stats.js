@@ -2,7 +2,7 @@ if (!localStorage.getItem("uid")) {
   window.location.href = "home.html";
 }
 
-import { collection, getDocs, query, where, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { collection, getDocs, query, where, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { initFirebase } from './firebase-config.js';
 import { calculateHandicap } from './handicap.js';
 
@@ -13,7 +13,10 @@ function escapeHTML(text) {
 }
 
 const { db } = initFirebase();
-const uid = localStorage.getItem("uid");
+const params = new URLSearchParams(window.location.search);
+const loggedUid = localStorage.getItem("uid");
+const uid = params.get('uid') || loggedUid;
+const viewingFriend = uid !== loggedUid;
 
 let allRounds = [], filters = { format: 'all', course: 'all', start: '', end: '' };
 let hcpChart, puttChart, clubDistanceChart, fwGirChart;
@@ -32,6 +35,15 @@ const CHART_COLORS = {
 };
 
 async function loadStats() {
+  if(viewingFriend){
+    try {
+      const s = await getDoc(doc(db, 'users', uid));
+      const name = s.exists() ? (s.data().name || 'amico') : 'amico';
+      document.getElementById('stats-title').textContent = `Statistiche di ${name}`;
+    } catch(e){
+      document.getElementById('stats-title').textContent = 'Statistiche Amico';
+    }
+  }
   const q = query(collection(db, "golf_rounds"), where("uid", "==", uid));
   const snap = await getDocs(q);
   allRounds = snap.docs.map(doc => {
@@ -148,13 +160,15 @@ function drawTable(rounds){
       <td>${netto !== '' ? (netto >= 0 ? '+' + netto : netto) : ''}</td>
       <td><a href="round.html?id=${r.id}">Dettagli</a></td>
       <td><button class="copy-link" data-id="${r.id}">Copia link</button></td>
-      <td><button class="delete-round" data-id="${r.id}">Elimina</button></td>
+      ${viewingFriend ? '<td></td>' : `<td><button class="delete-round" data-id="${r.id}">Elimina</button></td>`}
     `;
     tbody.appendChild(tr);
   });
-  tbody.querySelectorAll('.delete-round').forEach(btn => {
-    btn.addEventListener('click', () => deleteRound(btn.dataset.id));
-  });
+  if(!viewingFriend){
+    tbody.querySelectorAll('.delete-round').forEach(btn => {
+      btn.addEventListener('click', () => deleteRound(btn.dataset.id));
+    });
+  }
   tbody.querySelectorAll('.copy-link').forEach(btn => {
     btn.addEventListener('click', () => copyRoundLink(btn.dataset.id));
   });
@@ -290,6 +304,7 @@ function drawClubDistanceChart(distances){
 }
 
 async function deleteRound(id){
+  if(viewingFriend) return;
   if(!confirm('Eliminare il round?')) return;
   await deleteDoc(doc(db, 'golf_rounds', id));
   await loadStats();
