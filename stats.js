@@ -9,8 +9,8 @@ import { calculateHandicap } from './handicap.js';
 const { db } = initFirebase();
 const uid = localStorage.getItem("uid");
 
-let allRounds = [], filters = { format: 'all', course: 'all' };
-let hcpChart, puttChart, clubDistanceChart;
+let allRounds = [], filters = { format: 'all', course: 'all', start: '', end: '' };
+let hcpChart, puttChart, clubDistanceChart, fwGirChart;
 let allShots = [];
 let clubAggregates = {}, clubDistances = {};
 
@@ -65,9 +65,14 @@ function populateCourseFilter(){
     opt.value = c; opt.textContent = c;
     sel.appendChild(opt);
   });
-  ['filter-format','filter-course'].forEach(id=>{
-    document.getElementById(id).addEventListener('change',e=>{
-      filters[id==='filter-format'?'format':'course']=e.target.value;
+  ['filter-format','filter-course','start-date','end-date'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('change', e => {
+      if(id==='filter-format') filters.format = e.target.value;
+      else if(id==='filter-course') filters.course = e.target.value;
+      else if(id==='start-date') filters.start = e.target.value;
+      else if(id==='end-date') filters.end = e.target.value;
       updateDisplay();
     });
   });
@@ -77,6 +82,11 @@ function updateDisplay() {
   const rounds = allRounds
     .filter(r => (filters.format === 'all' || r.format === parseInt(filters.format)))
     .filter(r => (filters.course === 'all' || r.course === filters.course))
+    .filter(r => {
+      const s = filters.start ? new Date(filters.start) : null;
+      const e = filters.end ? new Date(filters.end) : null;
+      return (!s || r.date >= s) && (!e || r.date <= e);
+    })
     .sort((a,b) => a.date - b.date);
 
   const validForHCP = allRounds
@@ -99,6 +109,8 @@ function updateDisplay() {
   drawCharts(rounds, validForHCP);
   drawParAverages(rounds);
   drawClubStats(rounds);
+  drawFwGirChart(rounds);
+  updateFwGirTable(rounds);
 }
 
 function formatDate(d){
@@ -278,6 +290,48 @@ function drawCharts(rounds, validRounds){
     },
     options:{ responsive:true, plugins:{ legend:{ position:'top' } } }
   });
+}
+
+function drawFwGirChart(rounds){
+  if(fwGirChart){
+    fwGirChart.destroy();
+    fwGirChart = null;
+  }
+  const labels = rounds.map(r=>formatDate(r.date));
+  const fwPct = rounds.map(r=>{
+    const total = r.holes.filter(h=>h.fairway!=='na').length;
+    const hit = r.holes.filter(h=>h.fairway==='yes').length;
+    return total?((hit/total)*100).toFixed(1):0;
+  });
+  const girPct = rounds.map(r=>{
+    const count = r.holes.filter(h=>(h.score - h.putts)<=h.par-2).length;
+    return r.holes.length?((count/r.holes.length)*100).toFixed(1):0;
+  });
+  fwGirChart = new Chart(document.getElementById('fwGirChart'), {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        { label:'% Fairway', data:fwPct, borderColor:'#1E90FF', fill:false },
+        { label:'% GIR', data:girPct, borderColor:'#FF4500', fill:false }
+      ]
+    },
+    options:{ scales:{ y:{ beginAtZero:true, max:100 } } }
+  });
+}
+
+function updateFwGirTable(rounds){
+  const fwOpp = rounds.reduce((s,r)=>s + r.holes.filter(h=>h.fairway!=='na').length,0);
+  const fwHit = rounds.reduce((s,r)=>s + r.holes.filter(h=>h.fairway==='yes').length,0);
+  const girTot = rounds.reduce((s,r)=>s + r.holes.length,0);
+  const girHit = rounds.reduce((s,r)=>s + r.holes.filter(h=>(h.score - h.putts)<=h.par-2).length,0);
+  const tbody = document.querySelector('#fw-gir-table tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  const fwPct = fwOpp?((fwHit/fwOpp)*100).toFixed(1):'0';
+  const girPct = girTot?((girHit/girTot)*100).toFixed(1):'0';
+  tbody.innerHTML = `<tr><td>Fairway hit</td><td>${fwPct}%</td></tr>`+
+                    `<tr><td>GIR</td><td>${girPct}%</td></tr>`;
 }
 
 function getWeek(date){

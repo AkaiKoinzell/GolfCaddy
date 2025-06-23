@@ -76,6 +76,8 @@
       <select id="filter-course">
         <option value="all">Tutti i campi</option>
       </select>
+      <input type="date" id="start-date" />
+      <input type="date" id="end-date" />
     </label>
   </section>
 
@@ -97,6 +99,15 @@
   <section class="chart-container">
     <h2>% Putt sui colpi totali</h2>
     <canvas id="puttChart"></canvas>
+  </section>
+
+  <section class="chart-container">
+    <h2>Fairway e GIR</h2>
+    <canvas id="fwGirChart"></canvas>
+    <table id="fw-gir-table" style="margin-top:1rem;">
+      <thead><tr><th>Metric</th><th>%</th></tr></thead>
+      <tbody></tbody>
+    </table>
   </section>
 
   <section class="chart-container">
