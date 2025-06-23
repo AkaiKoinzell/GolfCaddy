@@ -70,7 +70,7 @@ async function loadClubData() {
   }
 }
 
-window.registerClubShot = async function () {
+window.saveClubShot = async function () {
   const club = document.getElementById("club-select").value;
   const distance = parseInt(document.getElementById("distance-input").value);
 
@@ -92,3 +92,4 @@ window.registerClubShot = async function () {
     alert("Errore nel salvataggio: " + error.message);
   }
 }
+
