@@ -251,9 +251,9 @@ function addShotRow() {
   const distId = `distance-input-${shotIndex}`;
   div.innerHTML = `
     <label for="${clubId}">Bastone utilizzato:</label>
-    <select id="${clubId}" class="club-select"></select>
+    <select id="${clubId}" class="club-select form-select"></select>
     <label for="${distId}">Distanza colpo (metri):</label>
-    <input id="${distId}" type="number" class="distance-input" />
+    <input id="${distId}" type="number" class="distance-input form-control" />
   `;
   container.appendChild(div);
   populateClubSelect(div.querySelector('select'));

@@ -16,6 +16,8 @@ python3 -m http.server 8000
 
 Then navigate to `http://localhost:8000/home.html` in your browser.
 
+The pages include [Bootstrap](https://getbootstrap.com/) from a CDN for modern styling.
+
 ## Firebase configuration
 
 1. Create a Firebase project with Authentication and Firestore enabled.
@@ -66,4 +68,4 @@ The top navigation links are injected by `navbar.js`. Add the script tag below t
 <script src="navbar.js"></script>
 ```
 
-This automatically inserts the shared `<nav class="navbar">` element so you don't have to repeat the markup in each file.
+This automatically inserts a Bootstrap styled navigation bar so you don't have to repeat the markup in each file.
