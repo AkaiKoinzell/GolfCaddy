@@ -111,16 +111,21 @@ async function loadFriends(){
   renderFriendList();
 }
 
-function renderFriendList(){
+function renderFriendList(filter = ''){
   const ul = document.getElementById('friends-list');
   if(!ul) return;
   ul.innerHTML = '';
-  friendList.forEach(f => {
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center';
-    li.textContent = f.name || f.id;
-    const actions = document.createElement('div');
-    const view = document.createElement('a');
+  friendList
+    .filter(f =>
+      f.name.toLowerCase().includes(filter) ||
+      f.id.toLowerCase().includes(filter)
+    )
+    .forEach(f => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+      li.textContent = f.name || f.id;
+      const actions = document.createElement('div');
+      const view = document.createElement('a');
     view.className = 'btn btn-sm btn-primary me-2';
     view.textContent = 'Vedi';
     view.href = `stats.html?uid=${f.id}`;
@@ -130,26 +135,15 @@ function renderFriendList(){
     del.onclick = () => removeFriend(f.id);
     actions.appendChild(view);
     actions.appendChild(del);
-    li.appendChild(actions);
-    ul.appendChild(li);
-  });
+      li.appendChild(actions);
+      ul.appendChild(li);
+    });
 }
 
-window.addFriend = async function(){
-  const input = document.getElementById('friend-uid');
-  const val = input.value.trim();
-  if(!val || friendList.some(f => f.id === val)) return;
-  await setDoc(doc(db, 'users', currentUid, 'friends', val), { since: new Date().toISOString() });
-  let name = val;
-  try {
-    const s = await getDoc(doc(db, 'users', val));
-    if(s.exists()) name = s.data().name || val;
-  } catch(e){
-    console.error('Failed fetching friend name', e);
-  }
-  friendList.push({ id: val, name });
-  input.value = '';
-  renderFriendList();
+
+window.filterFriends = function(){
+  const term = document.getElementById('friend-filter').value.trim().toLowerCase();
+  renderFriendList(term);
 }
 
 window.removeFriend = async function(uid){
