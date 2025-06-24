@@ -1,4 +1,9 @@
 // navbar.js - injects navigation bar into each page
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+import { initFirebase } from './firebase-config.js';
+import { isAdmin } from './roles.js';
+
+const { auth } = initFirebase();
 
 document.addEventListener('DOMContentLoaded', () => {
   const nav = document.createElement('nav');
@@ -27,4 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     document.body.prepend(nav);
   }
+
+  const linksContainer = nav.querySelector('.navbar-nav');
+  const adminLink = document.createElement('a');
+  adminLink.className = 'nav-link';
+  adminLink.href = 'admin.html';
+  adminLink.textContent = '🛠️ Admin';
+  onAuthStateChanged(auth, user => {
+    if (isAdmin(user)) {
+      linksContainer.appendChild(adminLink);
+    }
+  });
 });
