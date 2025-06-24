@@ -1,0 +1,38 @@
+/* New round page styles */
+.index-page {
+    padding: 1rem;
+    background: #f5f5f5;
+}
+
+.index-page h2 {
+    margin-top: 1rem;
+}
+
+.shot-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.shot-row label {
+    margin-top: 0;
+    width: auto;
+}
+
+.shot-row select,
+.shot-row input {
+    flex: 1;
+}
+
+@media (max-width: 600px) {
+    .shot-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+#hole-input {
+    display: none;
+}
+
