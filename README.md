@@ -37,6 +37,23 @@ FIREBASE_MEASUREMENT_ID=<MEASUREMENT-ID>
 The `.env` file is ignored by Git. `firebase-config.js` loads these values at
 runtime using a small helper so you don't have to commit your secrets.
 
+When deploying with Netlify (or any environment that builds the site with
+Vite), create the same variables in the dashboard but prefix them with
+`VITE_` so they are embedded at build time:
+
+```ini
+VITE_FIREBASE_API_KEY=<YOUR-API-KEY>
+VITE_FIREBASE_AUTH_DOMAIN=<YOUR-PROJECT>.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=<YOUR-PROJECT>
+VITE_FIREBASE_STORAGE_BUCKET=<YOUR-PROJECT>.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=<SENDER-ID>
+VITE_FIREBASE_APP_ID=<APP-ID>
+VITE_FIREBASE_MEASUREMENT_ID=<MEASUREMENT-ID>
+```
+
+`env.js` will first check for these `VITE_` variables and fall back to loading
+the `.env` file when running locally.
+
 ## Running the app
 
 Install dependencies with `npm install` and start the development server using:
