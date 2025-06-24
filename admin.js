@@ -7,6 +7,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { initFirebase } from './firebase-config.js';
+import { isAdmin } from './roles.js';
 
 const { auth, db } = initFirebase();
 let editingId = null;
@@ -66,7 +67,7 @@ window.saveCourse = async function () {
 };
 
 onAuthStateChanged(auth, user => {
-  if (!user) {
+  if (!isAdmin(user)) {
     window.location.href = 'home.html';
   } else {
     loadCourses();
