@@ -22,37 +22,19 @@ The pages include [Bootstrap](https://getbootstrap.com/) from a CDN for modern s
 
 1. Create a Firebase project with Authentication and Firestore enabled.
 2. Obtain your project configuration (apiKey, authDomain, projectId, etc.).
-3. Create a `.env` file in the project root containing the credentials:
+3. Edit `firebase-config.js` and replace the placeholder configuration with your
+   own credentials.
 
-```ini
-FIREBASE_API_KEY=<YOUR-API-KEY>
-FIREBASE_AUTH_DOMAIN=<YOUR-PROJECT>.firebaseapp.com
-FIREBASE_PROJECT_ID=<YOUR-PROJECT>
-FIREBASE_STORAGE_BUCKET=<YOUR-PROJECT>.appspot.com
-FIREBASE_MESSAGING_SENDER_ID=<SENDER-ID>
-FIREBASE_APP_ID=<APP-ID>
-FIREBASE_MEASUREMENT_ID=<MEASUREMENT-ID>
+```javascript
+export const firebaseConfig = {
+  apiKey: "<YOUR-API-KEY>",
+  authDomain: "<YOUR-PROJECT>.firebaseapp.com",
+  projectId: "<YOUR-PROJECT>",
+  storageBucket: "<YOUR-PROJECT>.appspot.com",
+  messagingSenderId: "<SENDER-ID>",
+  appId: "<APP-ID>"
+};
 ```
-
-The `.env` file is ignored by Git. `firebase-config.js` loads these values at
-runtime using a small helper so you don't have to commit your secrets.
-
-When deploying with Netlify (or any environment that builds the site with
-Vite), create the same variables in the dashboard but prefix them with
-`VITE_` so they are embedded at build time:
-
-```ini
-VITE_FIREBASE_API_KEY=<YOUR-API-KEY>
-VITE_FIREBASE_AUTH_DOMAIN=<YOUR-PROJECT>.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=<YOUR-PROJECT>
-VITE_FIREBASE_STORAGE_BUCKET=<YOUR-PROJECT>.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=<SENDER-ID>
-VITE_FIREBASE_APP_ID=<APP-ID>
-VITE_FIREBASE_MEASUREMENT_ID=<MEASUREMENT-ID>
-```
-
-`env.js` will first check for these `VITE_` variables and fall back to loading
-the `.env` file when running locally.
 
 ## Running the app
 
