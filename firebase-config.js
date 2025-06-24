@@ -1,15 +1,18 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { loadEnv } from './env.js';
+
+const env = loadEnv();
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyC2SWQzBCq2M18idSSXS-gR75I7fSV2NXk",
-  authDomain: "golfcaddy-ec421.firebaseapp.com",
-  projectId: "golfcaddy-ec421",
-  storageBucket: "golfcaddy-ec421.appspot.com",
-  messagingSenderId: "497160592489",
-  appId: "1:497160592489:web:548701ab6d395e579456f8",
-  measurementId: "G-XGBVHR0BD5"
+  apiKey: env.FIREBASE_API_KEY,
+  authDomain: env.FIREBASE_AUTH_DOMAIN,
+  projectId: env.FIREBASE_PROJECT_ID,
+  storageBucket: env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.FIREBASE_APP_ID,
+  measurementId: env.FIREBASE_MEASUREMENT_ID
 };
 
 export function initFirebase() {
