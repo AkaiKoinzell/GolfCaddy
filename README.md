@@ -81,3 +81,17 @@ If the collection does not exist yet, create it in the Firestore console and
 add a document with the email of any current admin (for example
 `l.m.devirgilio@gmail.com`). The application falls back to this email list if
 the collection cannot be read.
+
+## Development
+
+Install dependencies with `npm install`. Lint the codebase using:
+
+```bash
+npm run lint
+```
+
+Run the Jest test suite with:
+
+```bash
+npm test
+```
