@@ -6,7 +6,9 @@ import { collection, getDocs, query, where, doc, deleteDoc, getDoc } from "https
 import { initFirebase } from './src/firebase-config.js';
 import { calculateHandicap } from './handicap.js';
 import { computeStrokesGained, aggregateClubStats, filterRounds, validHandicapRounds, computeScoreTrend, computeRoundStrokesGained } from './statsCalc.js';
-import * as Render from './statsRender.js';
+import { drawCharts, renderClubDistanceChart, drawFwGirChart, drawScoreTrendChart, drawSgChart } from './src/js/stats/charts.js';
+import { drawTable, drawParAverages, updateClubStatsDisplay, updateFwGirTable } from './src/js/stats/table.js';
+import { populateCourseFilter } from './src/js/stats/filters.js';
 
 const { db } = initFirebase();
 const params = new URLSearchParams(window.location.search);
@@ -53,7 +55,7 @@ async function loadStats() {
   });
 
   await loadClubShots();
-  Render.populateCourseFilter(allRounds, filters, updateDisplay);
+  populateCourseFilter(allRounds, filters, updateDisplay);
   updateDisplay();
 }
 
@@ -98,15 +100,15 @@ function updateDisplay() {
   const sgTrend = computeRoundStrokesGained(rounds);
   populateClubFilterOptions(clubAggregates);
 
-  Render.drawTable(rounds, viewingFriend, deleteRound, copyRoundLink);
-  Render.drawCharts(rounds, validForHCP);
-  Render.drawScoreTrendChart(scoreTrend);
-  Render.drawSgChart(sgTrend);
-  Render.drawParAverages(rounds);
-  Render.updateClubStatsDisplay(clubAggregates, clubStrokes, document.getElementById('club-filter').value);
-  Render.renderClubDistanceChart(clubDistances, document.getElementById('club-filter').value);
-  Render.drawFwGirChart(rounds);
-  Render.updateFwGirTable(rounds);
+  drawTable(rounds, viewingFriend, deleteRound, copyRoundLink);
+  drawCharts(rounds, validForHCP);
+  drawScoreTrendChart(scoreTrend);
+  drawSgChart(sgTrend);
+  drawParAverages(rounds);
+  updateClubStatsDisplay(clubAggregates, clubStrokes, document.getElementById('club-filter').value);
+  renderClubDistanceChart(clubDistances, document.getElementById('club-filter').value);
+  drawFwGirChart(rounds);
+  updateFwGirTable(rounds);
 }
 
 async function deleteRound(id){
@@ -133,6 +135,6 @@ function copyRoundLink(id){
 loadStats();
 
 document.getElementById('club-filter').addEventListener('change', e => {
-  Render.updateClubStatsDisplay(clubAggregates, clubStrokes, e.target.value);
-  Render.renderClubDistanceChart(clubDistances, e.target.value);
+  updateClubStatsDisplay(clubAggregates, clubStrokes, e.target.value);
+  renderClubDistanceChart(clubDistances, e.target.value);
 });
