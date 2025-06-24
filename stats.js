@@ -70,6 +70,20 @@ async function loadClubShots(){
   });
 }
 
+function populateClubFilterOptions(clubs){
+  const sel = document.getElementById('club-filter');
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="all">Tutti i club</option>';
+  Object.keys(clubs).sort().forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  if([...sel.options].some(o => o.value === current)) sel.value = current;
+}
+
 
 function updateDisplay() {
   const rounds = filterRounds(allRounds, filters);
@@ -82,6 +96,7 @@ function updateDisplay() {
   clubStrokes = computeStrokesGained(allRounds);
   const scoreTrend = computeScoreTrend(rounds);
   const sgTrend = computeRoundStrokesGained(rounds);
+  populateClubFilterOptions(clubAggregates);
 
   Render.drawTable(rounds, viewingFriend, deleteRound, copyRoundLink);
   Render.drawCharts(rounds, validForHCP);
