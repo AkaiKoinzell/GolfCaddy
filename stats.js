@@ -5,7 +5,7 @@ if (!localStorage.getItem("uid")) {
 import { collection, getDocs, query, where, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { initFirebase } from './src/firebase-config.js';
 import { calculateHandicap } from './handicap.js';
-import { computeStrokesGained, aggregateClubStats, filterRounds, validHandicapRounds } from './statsCalc.js';
+import { computeStrokesGained, aggregateClubStats, filterRounds, validHandicapRounds, computeScoreTrend, computeRoundStrokesGained } from './statsCalc.js';
 import * as Render from './statsRender.js';
 
 const { db } = initFirebase();
@@ -80,9 +80,13 @@ function updateDisplay() {
 
   ({ clubAggregates, clubDistances } = aggregateClubStats(rounds, allShots));
   clubStrokes = computeStrokesGained(allRounds);
+  const scoreTrend = computeScoreTrend(rounds);
+  const sgTrend = computeRoundStrokesGained(rounds);
 
   Render.drawTable(rounds, viewingFriend, deleteRound, copyRoundLink);
   Render.drawCharts(rounds, validForHCP);
+  Render.drawScoreTrendChart(scoreTrend);
+  Render.drawSgChart(sgTrend);
   Render.drawParAverages(rounds);
   Render.updateClubStatsDisplay(clubAggregates, clubStrokes, document.getElementById('club-filter').value);
   Render.renderClubDistanceChart(clubDistances, document.getElementById('club-filter').value);

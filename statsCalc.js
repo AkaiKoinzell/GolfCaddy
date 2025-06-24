@@ -107,3 +107,22 @@ export function validHandicapRounds(allRounds){
       par: r.par
     }));
 }
+
+export function computeScoreTrend(rounds, window=5){
+  const sorted = [...rounds].sort((a,b)=>a.date-b.date);
+  return sorted.map((r,i)=>{
+    const slice = sorted.slice(Math.max(0,i-window+1), i+1);
+    const avg = slice.reduce((s,x)=>s + (x.score - x.par),0) / slice.length;
+    return { date:r.date, avg };
+  });
+}
+
+export function computeRoundStrokesGained(rounds){
+  return rounds.map(r=>{
+    const sg = r.holes.reduce((tot,h)=>{
+      const dist = typeof h.distance === 'number' ? h.distance : 0;
+      return tot + (expectedStrokes(dist) - h.score);
+    },0);
+    return { date:r.date, sg };
+  });
+}
