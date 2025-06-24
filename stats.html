@@ -47,6 +47,8 @@
     <input type="date" id="end-date" class="form-control" />
   </section>
 
+  <div class="stats-carousel">
+
   <aside class="chart-container">
     <h2>Handicap nel tempo</h2>
     <canvas id="hcpChart"></canvas>
@@ -54,6 +56,7 @@
 
   <section class="chart-container">
     <h2>Media Colpi per Tipo di Buca</h2>
+    <div class="info-text">Media dei colpi e dei putt sui par 3, 4 e 5 nei round filtrati.</div>
     <table id="par-average-table">
       <thead>
         <tr><th>Par</th><th>Media Colpi</th><th>Media Putt</th></tr>
@@ -69,6 +72,7 @@
 
   <section class="chart-container">
     <h2>Fairway e GIR</h2>
+    <div class="info-text">Percentuale complessiva di fairway presi e di green in regulation.</div>
     <canvas id="fwGirChart"></canvas>
     <table id="fw-gir-table" class="mt-2">
       <thead><tr><th>Metric</th><th>%</th></tr></thead>
@@ -88,6 +92,7 @@
 
   <section class="chart-container">
     <h2>Statistiche per Club</h2>
+    <div class="info-text">Statistiche aggregate dei colpi registrati per ciascun club.</div>
     <label for="club-filter">Filtra per club:</label>
     <select id="club-filter">
       <option value="all">Tutti i club</option>
@@ -114,6 +119,7 @@
 
   <section class="chart-container">
     <h2>Storico Round</h2>
+    <div class="info-text">Elenco dei round memorizzati con link ai dettagli e possibilità di condivisione.</div>
     <table id="rounds-table">
       <thead>
         <tr>
@@ -124,7 +130,9 @@
     </table>
   </section>
 
- 
+
+  </div>
+
   </main>
 
   <script type="module" src="entries/stats.js"></script>
