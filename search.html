@@ -14,13 +14,15 @@
   <main class="container">
     <section>
       <h2>Cerca Utenti</h2>
-      <input type="text" id="search-user-input" class="form-control" placeholder="Nome o Email" />
+      <label for="search-user-input" class="visually-hidden">Nome o Email</label>
+      <input type="text" id="search-user-input" class="form-control" placeholder="Nome o Email" aria-label="Nome o Email" />
       <button class="btn btn-success mt-2" onclick="searchUsers()">Cerca</button>
       <ul id="user-results" class="list-group mt-2"></ul>
     </section>
     <section class="mt-4">
       <h2>Cerca Campi da Golf</h2>
-      <input type="text" id="search-course-input" class="form-control" placeholder="Nome del campo" />
+      <label for="search-course-input" class="visually-hidden">Nome del campo</label>
+      <input type="text" id="search-course-input" class="form-control" placeholder="Nome del campo" aria-label="Nome del campo" />
       <button class="btn btn-success mt-2" onclick="searchCourses()">Cerca</button>
       <ul id="course-results" class="list-group mt-2"></ul>
     </section>
