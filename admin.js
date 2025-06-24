@@ -66,8 +66,8 @@ window.saveCourse = async function () {
   await loadCourses();
 };
 
-onAuthStateChanged(auth, user => {
-  if (!isAdmin(user)) {
+onAuthStateChanged(auth, async user => {
+  if (!(await isAdmin(user))) {
     window.location.href = 'home.html';
   } else {
     loadCourses();
