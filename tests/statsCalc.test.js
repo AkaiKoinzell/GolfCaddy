@@ -1,4 +1,4 @@
-import { expectedStrokes, filterRounds } from '../statsCalc.js';
+import { expectedStrokes, filterRounds, computeScoreTrend, computeRoundStrokesGained } from '../statsCalc.js';
 
 describe('expectedStrokes', () => {
   test('returns base value for zero or negative distance', () => {
@@ -36,5 +36,29 @@ describe('filterRounds', () => {
     });
     expect(res).toHaveLength(1);
     expect(res[0].date).toEqual(new Date('2023-03-01'));
+  });
+});
+
+describe('computeScoreTrend', () => {
+  const rounds = [
+    { date: new Date('2023-01-01'), score: 40, par: 36 },
+    { date: new Date('2023-01-08'), score: 42, par: 36 },
+    { date: new Date('2023-01-15'), score: 41, par: 36 },
+    { date: new Date('2023-01-22'), score: 39, par: 36 }
+  ];
+  test('calculates moving average of net score', () => {
+    const res = computeScoreTrend(rounds, 2);
+    expect(res[1].avg).toBeCloseTo(5);
+    expect(res[3].avg).toBeCloseTo(4);
+  });
+});
+
+describe('computeRoundStrokesGained', () => {
+  const rounds = [
+    { date: new Date('2023-02-01'), holes:[{ distance:200, score:3 }] }
+  ];
+  test('returns strokes gained vs benchmark', () => {
+    const res = computeRoundStrokesGained(rounds);
+    expect(res[0].sg).toBeCloseTo(1);
   });
 });

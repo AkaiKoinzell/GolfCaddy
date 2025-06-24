@@ -6,10 +6,12 @@ export const CHART_COLORS = {
   bar9: styleVars.getPropertyValue('--chart-9-color').trim() || '#32CD32',
   hcp: styleVars.getPropertyValue('--chart-hcp-color').trim() || '#FFA500',
   fw: styleVars.getPropertyValue('--chart-fw-color').trim() || '#1E90FF',
-  gir: styleVars.getPropertyValue('--chart-gir-color').trim() || '#FF4500'
+  gir: styleVars.getPropertyValue('--chart-gir-color').trim() || '#FF4500',
+  trend: styleVars.getPropertyValue('--chart-trend-color').trim() || '#8A2BE2',
+  sg: styleVars.getPropertyValue('--chart-sg-color').trim() || '#FF1493'
 };
 
-let hcpChart, puttChart, clubDistanceChart, fwGirChart;
+let hcpChart, puttChart, clubDistanceChart, fwGirChart, scoreTrendChart, sgChart;
 
 export function populateCourseFilter(allRounds, filters, updateCallback){
   const sel = document.getElementById('filter-course');
@@ -184,6 +186,34 @@ export function drawFwGirChart(rounds){
       ]
     },
     options:{ scales:{ y:{ beginAtZero:true, max:100 } } }
+  });
+}
+
+export function drawScoreTrendChart(trend){
+  if(scoreTrendChart){
+    scoreTrendChart.destroy();
+    scoreTrendChart = null;
+  }
+  const labels = trend.map(t=>formatDate(t.date));
+  const data = trend.map(t=>t.avg.toFixed(2));
+  scoreTrendChart = new Chart(document.getElementById('scoreTrendChart'), {
+    type:'line',
+    data:{ labels, datasets:[{ label:'Media Mobile Netto', data, borderColor:CHART_COLORS.trend, fill:false }]},
+    options:{ scales:{ y:{ beginAtZero:false } } }
+  });
+}
+
+export function drawSgChart(dataArr){
+  if(sgChart){
+    sgChart.destroy();
+    sgChart = null;
+  }
+  const labels = dataArr.map(t=>formatDate(t.date));
+  const data = dataArr.map(t=>t.sg.toFixed(2));
+  sgChart = new Chart(document.getElementById('sgTrendChart'), {
+    type:'line',
+    data:{ labels, datasets:[{ label:'Strokes Gained', data, borderColor:CHART_COLORS.sg, fill:false }]},
+    options:{ scales:{ y:{ beginAtZero:false } } }
   });
 }
 
