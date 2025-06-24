@@ -39,9 +39,15 @@ runtime using a small helper so you don't have to commit your secrets.
 
 ## Running the app
 
-After starting a local server as described above, open `home.html` to log in with
-Google. Once authenticated you can navigate to the other pages using the
-navigation links.
+Install dependencies with `npm install` and start the development server using:
+
+```bash
+npm run dev
+```
+
+Vite will serve the pages on `http://localhost:5173` with hot module reload.
+Open `home.html` to log in with Google. Once authenticated you can navigate to
+the other pages using the navigation links.
 
 ## Main pages
 
@@ -94,4 +100,10 @@ Run the Jest test suite with:
 
 ```bash
 npm test
+```
+
+Create an optimized production build with:
+
+```bash
+npm run build
 ```
