@@ -65,17 +65,49 @@ function renderClubList() {
   clubList.forEach((c, idx) => {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
-    li.textContent = c;
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-danger';
-    btn.textContent = 'Rimuovi';
-    btn.onclick = () => {
+
+    const label = document.createElement('span');
+    label.textContent = c;
+    li.appendChild(label);
+
+    const actions = document.createElement('div');
+
+    const up = document.createElement('button');
+    up.className = 'btn btn-sm btn-outline-secondary me-1';
+    up.textContent = '↑';
+    up.onclick = () => moveClubUp(idx);
+    actions.appendChild(up);
+
+    const down = document.createElement('button');
+    down.className = 'btn btn-sm btn-outline-secondary me-1';
+    down.textContent = '↓';
+    down.onclick = () => moveClubDown(idx);
+    actions.appendChild(down);
+
+    const del = document.createElement('button');
+    del.className = 'btn btn-sm btn-danger';
+    del.textContent = 'Rimuovi';
+    del.onclick = () => {
       clubList.splice(idx, 1);
       renderClubList();
     };
-    li.appendChild(btn);
+    actions.appendChild(del);
+
+    li.appendChild(actions);
     ul.appendChild(li);
   });
+}
+
+function moveClubUp(index) {
+  if (index <= 0) return;
+  [clubList[index - 1], clubList[index]] = [clubList[index], clubList[index - 1]];
+  renderClubList();
+}
+
+function moveClubDown(index) {
+  if (index >= clubList.length - 1) return;
+  [clubList[index], clubList[index + 1]] = [clubList[index + 1], clubList[index]];
+  renderClubList();
 }
 
 window.addClub = function() {
