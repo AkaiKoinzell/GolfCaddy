@@ -67,6 +67,8 @@ the other pages using the navigation links.
 
 Course definitions are now stored in a Firestore collection and can be
 managed through **admin.html**.
+Sample course data is provided under `src/data/courses.js` if you need a
+reference or want to seed your database manually.
 
 ## Navigation Bar
 
