@@ -1,3 +1,4 @@
+import { addShotRow } from "./ui.js";
 export const state = {
   currentHole: 1,
   totalHoles: 9,
@@ -29,44 +30,6 @@ export function autoFillHoleData(){
   }
 }
 
-export function populateClubSelect(sel){
-  const select = sel || document.querySelector('#shots-container .club-select');
-  if(!select) return;
-  select.innerHTML = '<option value="">-- Seleziona --</option>';
-  state.clubs.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c;
-    opt.textContent = c;
-    select.appendChild(opt);
-  });
-}
-
-export function addShotRow(){
-  const container = document.getElementById('shots-container');
-  if(!container) return;
-  const div = document.createElement('div');
-  div.className = 'shot-row';
-  const clubId = `club-select-${state.shotIndex}`;
-  const distId = `distance-input-${state.shotIndex}`;
-  div.innerHTML = `
-    <label for="${clubId}">Bastone utilizzato:</label>
-    <select id="${clubId}" class="club-select form-select"></select>
-    <label for="${distId}">Distanza colpo (metri):</label>
-    <input id="${distId}" type="number" class="distance-input form-control" />
-  `;
-  container.appendChild(div);
-  populateClubSelect(div.querySelector('select'));
-  const selEl = div.querySelector('select');
-  if(state.shotIndex === 0 && selEl){
-    selEl.addEventListener('change', maybeShowFairway);
-  }
-  state.shotIndex++;
-}
-
-export function maybeShowFairway(){
-  const grp = document.getElementById('fairway-group');
-  if(grp) grp.classList.remove('hidden');
-}
 
 export function saveCurrentPlayerData(){
   if(!state.holeData[state.currentPlayerIndex]) return;
@@ -117,4 +80,20 @@ export function resetHoleData(){
   state.currentPlayerIndex = 0;
   const sel = document.getElementById('player-select');
   if(sel) sel.value = '0';
+}
+
+export function buildDraft(uid){
+  return {
+    meta: window._roundMeta,
+    roundData: state.roundData,
+    playersScores: state.playersScores,
+    holeData: state.holeData,
+    currentPlayerIndex: state.currentPlayerIndex,
+    currentHole: state.currentHole,
+    totalHoles: state.totalHoles,
+    selectedHoles: state.selectedHoles,
+    notesValue: document.getElementById('notes')?.value || '',
+    uid,
+    timestamp: new Date().toISOString()
+  };
 }

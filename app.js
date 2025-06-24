@@ -18,6 +18,22 @@ import {
   updateComboOptions
 } from './src/js/round/courses.js';
 import {
+  state,
+  setClubs,
+  updateHoleNumber,
+  autoFillHoleData,
+  saveCurrentPlayerData,
+  loadCurrentPlayerData,
+  resetHoleData,
+  buildDraft
+} from './src/js/roundState.js';
+import {
+  addShotRow,
+  populateClubSelect,
+  clearInputs,
+  maybeShowFairway
+} from './src/js/ui.js';
+import {
   saveDraft as storeDraft,
   deleteDraft as removeDraft,
   fetchDraft,
@@ -32,16 +48,8 @@ const storageBucket = firebaseConfig.storageBucket;
 let uid = null;
 let userDisplayName = null;
 let userEmail = null;
-let currentHole = 1;
-let totalHoles = 9;
-let shotIndex = 0;
-let selectedHoles = [];
-const roundData = [];
-let playersScores = [];
-let clubs = getStoredClubs() || [...defaultClubs];
 let friendList = [];
-let currentPlayerIndex = 0;
-let holeData = [];
+setClubs(getStoredClubs() || [...defaultClubs]);
 
 // expose helper functions for inline handlers
 window.addFriendPlayer = addFriendPlayer;
@@ -74,7 +82,8 @@ onAuthStateChanged(auth, async (user) => {
     userDisplayName = user.displayName;
     userEmail = user.email;
 
-    clubs = await loadClubs(uid);
+    const c = await loadClubs(uid);
+    setClubs(c);
     document.querySelectorAll('.club-select').forEach(sel => populateClubSelect(sel));
     friendList = await fetchFriends(uid);
     populateFriendOptions(friendList);
@@ -87,33 +96,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-function updateHoleNumber() {
-  document.getElementById("hole-number").textContent = currentHole;
-}
 
-function autoFillHoleData() {
-  const hole = selectedHoles[currentHole - 1];
-  if (hole) {
-    document.getElementById("par").value = hole.par;
-    document.getElementById("distance").value = hole.distance;
-  }
-}
-
-function buildDraft() {
-  return {
-    meta: window._roundMeta,
-    roundData,
-    playersScores,
-    holeData,
-    currentPlayerIndex,
-    currentHole,
-    totalHoles,
-    selectedHoles,
-    notesValue: document.getElementById('notes')?.value || '',
-    uid,
-    timestamp: new Date().toISOString()
-  };
-}
 
 
 window.saveHole = async function () {
@@ -135,14 +118,14 @@ window.saveHole = async function () {
     penalties = 0;
   }
 
-  holeData.forEach((data, idx) => {
+  state.holeData.forEach((data, idx) => {
     const shots = data.shots || [];
     const pen = parseInt(data.penalties);
     const penaltiesVal = isNaN(pen) ? 0 : pen;
     const puttsCount = shots.filter(s => s.club === 'Putter').length;
     const score = shots.length + penaltiesVal;
     const hole = {
-      number: selectedHoles[currentHole - 1].number,
+      number: state.selectedHoles[state.currentHole - 1].number,
       par,
       distance,
       score,
@@ -154,12 +137,12 @@ window.saveHole = async function () {
       distanceShot: shots[0] ? shots[0].distance : null
     };
     if(idx === 0) {
-      roundData.push(hole);
+      state.roundData.push(hole);
     }
-    playersScores[idx].holes.push({ score });
+    state.playersScores[idx].holes.push({ score });
   });
 
-  if (currentHole >= totalHoles) {
+  if (state.currentHole >= state.totalHoles) {
     // Evita salvataggi doppi
     if (localStorage.getItem("roundSaved") === "true") {
       alert("Round già salvato.");
@@ -173,14 +156,14 @@ window.saveHole = async function () {
         course,
         layout,
         player: players[0],
-        players: playersScores,
+        players: state.playersScores,
         combo,
         cr,
         slope,
         totalPar,
         totalDistance,
         notes: document.getElementById("notes").value,
-        holes: roundData,
+        holes: state.roundData,
         uid: uid
       });
 
@@ -193,118 +176,21 @@ window.saveHole = async function () {
     } catch (error) {
       alert("Errore nel salvataggio su Firebase: " + error.message);
       saveButton.disabled = false; // riattiva in caso di errore
-      await storeDraft(uid, buildDraft());
+      await storeDraft(uid, buildDraft(uid));
     }
   } else {
-    currentHole++;
+    state.currentHole++;
     updateHoleNumber();
     clearInputs();
     autoFillHoleData();
     resetHoleData();
     loadCurrentPlayerData();
     saveButton.disabled = false; // riattiva per buche successive
-    await storeDraft(uid, buildDraft());
+    await storeDraft(uid, buildDraft(uid));
   }
 };
 
 
-function clearInputs() {
-  ["par", "distance", "penalties"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = "";
-  });
-  document.getElementById("fairway").value = "na";
-  const fairwayGroup = document.getElementById('fairway-group');
-  if (fairwayGroup) fairwayGroup.classList.add('hidden');
-  const container = document.getElementById('shots-container');
-  container.innerHTML = '';
-  shotIndex = 0;
-  addShotRow();
-}
-
-function populateClubSelect(sel) {
-  const select = sel || document.querySelector('#shots-container .club-select');
-  if (!select) return;
-  select.innerHTML = '<option value="">-- Seleziona --</option>';
-  clubs.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    select.appendChild(opt);
-  });
-}
-
-function addShotRow() {
-  const container = document.getElementById('shots-container');
-  const div = document.createElement('div');
-  div.className = 'shot-row';
-  const clubId = `club-select-${shotIndex}`;
-  const distId = `distance-input-${shotIndex}`;
-  div.innerHTML = `
-    <label for="${clubId}">Bastone utilizzato:</label>
-    <select id="${clubId}" class="club-select form-select"></select>
-    <label for="${distId}">Distanza colpo (metri):</label>
-    <input id="${distId}" type="number" class="distance-input form-control" />
-  `;
-  container.appendChild(div);
-  populateClubSelect(div.querySelector('select'));
-  const sel = div.querySelector('select');
-  if (shotIndex === 0 && sel) {
-    sel.addEventListener('change', maybeShowFairway);
-  }
-  shotIndex++;
-}
-
-function maybeShowFairway(){
-  const grp = document.getElementById('fairway-group');
-  if(grp) grp.classList.remove('hidden');
-}
-
-function saveCurrentPlayerData(){
-  if(!holeData[currentPlayerIndex]) return;
-  holeData[currentPlayerIndex].penalties = document.getElementById('penalties').value;
-  holeData[currentPlayerIndex].fairway = document.getElementById('fairway').value;
-  const shots = [];
-  document.querySelectorAll('#shots-container .shot-row').forEach(row=>{
-    const club = row.querySelector('.club-select').value;
-    const distVal = parseInt(row.querySelector('.distance-input').value);
-    if (club || !isNaN(distVal)) {
-      shots.push({ club: club || null, distance: isNaN(distVal) ? null : distVal });
-    }
-  });
-  holeData[currentPlayerIndex].shots = shots;
-}
-
-function loadCurrentPlayerData(){
-  const data = holeData[currentPlayerIndex];
-  document.getElementById('penalties').value = data.penalties;
-  document.getElementById('fairway').value = data.fairway;
-  const container = document.getElementById('shots-container');
-  container.innerHTML = '';
-  shotIndex = 0;
-  if(data.shots && data.shots.length){
-    const fairwayGroup = document.getElementById('fairway-group');
-    if(fairwayGroup) fairwayGroup.classList.remove('hidden');
-    data.shots.forEach(s=>{
-      addShotRow();
-      const row = container.lastElementChild;
-      row.querySelector('.club-select').value = s.club || '';
-      if(s.distance !== null && s.distance !== undefined)
-        row.querySelector('.distance-input').value = s.distance;
-    });
-  } else {
-    addShotRow();
-    const fairwayGroup = document.getElementById('fairway-group');
-    if(fairwayGroup) fairwayGroup.classList.add('hidden');
-  }
-}
-
-function resetHoleData(){
-  holeData = playersScores.map(() => ({ penalties: '', fairway: 'na', shots: [] }));
-  currentPlayerIndex = 0;
-  const sel = document.getElementById('player-select');
-  if(sel) sel.value = '0';
-}
 
 
 async function checkForDraft() {
@@ -313,20 +199,20 @@ async function checkForDraft() {
 
   if (confirm('Riprendere il round incompleto?')) {
     window._roundMeta = draft.meta;
-    totalHoles = draft.totalHoles;
-    currentHole = draft.currentHole;
-    selectedHoles = draft.selectedHoles || [];
-    roundData.length = 0;
-    draft.roundData.forEach(h => roundData.push(h));
+    state.totalHoles = draft.totalHoles;
+    state.currentHole = draft.currentHole;
+    state.selectedHoles = draft.selectedHoles || [];
+    state.roundData.length = 0;
+    draft.roundData.forEach(h => state.roundData.push(h));
 
     document.getElementById('players').value = (draft.meta.players || []).join(', ');
-    playersScores = draft.playersScores || (draft.meta.players || []).map(n => ({name: n, holes: []}));
-    holeData = draft.holeData || (draft.meta.players || []).map(() => ({ penalties: '', fairway: 'na', shots: [] }));
-    currentPlayerIndex = draft.currentPlayerIndex || 0;
+    state.playersScores = draft.playersScores || (draft.meta.players || []).map(n => ({name: n, holes: []}));
+    state.holeData = draft.holeData || (draft.meta.players || []).map(() => ({ penalties: '', fairway: 'na', shots: [] }));
+    state.currentPlayerIndex = draft.currentPlayerIndex || 0;
     const sel = document.getElementById('player-select');
     if(sel){
-      sel.innerHTML = playersScores.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('');
-      sel.value = String(currentPlayerIndex);
+      sel.innerHTML = state.playersScores.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('');
+      sel.value = String(state.currentPlayerIndex);
     }
     document.getElementById('course').value = draft.meta.course || '';
     updateLayoutOptions(courses);
@@ -354,18 +240,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     const storedUid = localStorage.getItem('uid');
     if (storedUid) {
       uid = storedUid;
-      clubs = await loadClubs(uid);
+      setClubs(await loadClubs(uid));
       friendList = await fetchFriends(uid);
       populateFriendOptions(friendList);
     }
   } else {
-    clubs = await loadClubs(uid);
+    setClubs(await loadClubs(uid));
     friendList = await fetchFriends(uid);
     populateFriendOptions(friendList);
   }
   populateCourseOptions(courses);
-  shotIndex = document.querySelectorAll('#shots-container .shot-row').length;
-  if (shotIndex === 0) {
+  state.shotIndex = document.querySelectorAll('#shots-container .shot-row').length;
+  if (state.shotIndex === 0) {
     addShotRow();
   } else {
     document.querySelectorAll('#shots-container .shot-row').forEach(row => {
@@ -390,14 +276,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(prevBtn && nextBtn){
     prevBtn.addEventListener('click', () => {
       saveCurrentPlayerData();
-      currentPlayerIndex = (currentPlayerIndex - 1 + playersScores.length) % playersScores.length;
-      document.getElementById('player-select').value = String(currentPlayerIndex);
+      state.currentPlayerIndex = (state.currentPlayerIndex - 1 + state.playersScores.length) % state.playersScores.length;
+      document.getElementById('player-select').value = String(state.currentPlayerIndex);
       loadCurrentPlayerData();
     });
     nextBtn.addEventListener('click', () => {
       saveCurrentPlayerData();
-      currentPlayerIndex = (currentPlayerIndex + 1) % playersScores.length;
-      document.getElementById('player-select').value = String(currentPlayerIndex);
+      state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.playersScores.length;
+      document.getElementById('player-select').value = String(state.currentPlayerIndex);
       loadCurrentPlayerData();
     });
   }
@@ -406,7 +292,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(playerSel){
     playerSel.addEventListener('change', e => {
       saveCurrentPlayerData();
-      currentPlayerIndex = parseInt(e.target.value);
+      state.currentPlayerIndex = parseInt(e.target.value);
       loadCurrentPlayerData();
     });
   }
@@ -424,14 +310,13 @@ window.startRound = function () {
   if(names.length === 0){
     names.push(userDisplayName || userEmail || "Giocatore");
   }
-  playersScores = names.map(n => ({ name: n, holes: [] }));
-  const playerName = playersScores[0].name;
-  holeData = names.map(() => ({ penalties: '', fairway: 'na', shots: [] }));
-  currentPlayerIndex = 0;
+  state.playersScores = names.map(n => ({ name: n, holes: [] }));
+  state.holeData = names.map(() => ({ penalties: '', fairway: 'na', shots: [] }));
+  state.currentPlayerIndex = 0;
   const sel = document.getElementById('player-select');
   if(sel){
     sel.innerHTML = names.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
-    sel.value = String(currentPlayerIndex);
+    sel.value = String(state.currentPlayerIndex);
   }
   const combo = document.getElementById("combo9")?.value;
 
@@ -441,17 +326,17 @@ window.startRound = function () {
 }
 
 
-  totalHoles = parseInt(holesSelect.value);
-  currentHole = 1;
-  roundData.length = 0;
+  state.totalHoles = parseInt(holesSelect.value);
+  state.currentHole = 1;
+  state.roundData.length = 0;
 
-  selectedHoles = [];
+  state.selectedHoles = [];
   let cr = 0;
   let slope = 0;
   let totalPar = 0;
   let totalDistance = 0;
 
-  if (totalHoles === 9 && courses[course]?.combinations9?.[combo]) {
+  if (state.totalHoles === 9 && courses[course]?.combinations9?.[combo]) {
     const comboData = courses[course].combinations9[combo];
     if (!comboData || !Array.isArray(comboData.holes)) {
       alert("Combinazione 9 buche non valida o non trovata.");
@@ -466,7 +351,7 @@ window.startRound = function () {
       return;
     }
 
-    selectedHoles = comboData.holes.map(n => {
+    state.selectedHoles = comboData.holes.map(n => {
       const hole = teeData.holes.find(h => h.number === n);
       if (!hole) {
         throw new Error(`Buca numero ${n} non trovata nel layout ${layoutKey}`);
@@ -476,9 +361,9 @@ window.startRound = function () {
 
     cr = teeData?.cr;
     slope = teeData?.slope;
-    totalPar = selectedHoles.reduce((sum, h) => sum + h.par, 0);
-    totalDistance = selectedHoles.reduce((sum, h) => sum + h.distance, 0);
-  } else if (totalHoles === 18 && courses[course]?.combinations18?.[combo]) {
+    totalPar = state.selectedHoles.reduce((sum, h) => sum + h.par, 0);
+    totalDistance = state.selectedHoles.reduce((sum, h) => sum + h.distance, 0);
+  } else if (state.totalHoles === 18 && courses[course]?.combinations18?.[combo]) {
     const parts = courses[course].combinations18[combo];
     parts.forEach(({ layout, holes }) => {
       const teeData = courses[course]?.tees[layout];
@@ -487,7 +372,7 @@ window.startRound = function () {
       holes.forEach(n => {
         const hole = teeData.holes.find(h => h.number === n);
         if (hole) {
-          selectedHoles.push(hole);
+          state.selectedHoles.push(hole);
           totalPar += hole.par;
           totalDistance += hole.distance;
         }
@@ -502,11 +387,11 @@ window.startRound = function () {
       alert("Dati tee non validi.");
       return;
     }
-    selectedHoles = teeData.holes.slice(0, totalHoles);
+    state.selectedHoles = teeData.holes.slice(0, state.totalHoles);
     cr = teeData?.cr;
     slope = teeData?.slope;
-    totalPar = selectedHoles.reduce((sum, h) => sum + h.par, 0);
-    totalDistance = selectedHoles.reduce((sum, h) => sum + h.distance, 0);
+    totalPar = state.selectedHoles.reduce((sum, h) => sum + h.par, 0);
+    totalDistance = state.selectedHoles.reduce((sum, h) => sum + h.distance, 0);
   }
 
   window._roundMeta = { course, layout, players: names, combo, cr, slope, totalPar, totalDistance };
@@ -516,5 +401,5 @@ window.startRound = function () {
   updateHoleNumber();
   autoFillHoleData();
   loadCurrentPlayerData();
-  storeDraft(uid, buildDraft());
+  storeDraft(uid, buildDraft(uid));
 };
