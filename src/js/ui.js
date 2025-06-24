@@ -1,3 +1,4 @@
+import { state } from "./roundState.js";
 export function populateFriendOptions(list){
   const container = document.getElementById('friend-options');
   if(!container) return;
@@ -94,4 +95,58 @@ export function updateComboOptions(courses){
   } else {
     comboContainer.style.display = 'none';
   }
+}
+
+export function populateClubSelect(sel){
+  const select = sel || document.querySelector('#shots-container .club-select');
+  if(!select) return;
+  select.innerHTML = '<option value="">-- Seleziona --</option>';
+  state.clubs.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    select.appendChild(opt);
+  });
+}
+
+export function maybeShowFairway(){
+  const grp = document.getElementById('fairway-group');
+  if(grp) grp.classList.remove('hidden');
+}
+
+export function addShotRow(){
+  const container = document.getElementById('shots-container');
+  if(!container) return;
+  const div = document.createElement('div');
+  div.className = 'shot-row';
+  const clubId = `club-select-${state.shotIndex}`;
+  const distId = `distance-input-${state.shotIndex}`;
+  div.innerHTML = `
+    <label for="${clubId}">Bastone utilizzato:</label>
+    <select id="${clubId}" class="club-select form-select"></select>
+    <label for="${distId}">Distanza colpo (metri):</label>
+    <input id="${distId}" type="number" class="distance-input form-control" />
+  `;
+  container.appendChild(div);
+  populateClubSelect(div.querySelector('select'));
+  const selEl = div.querySelector('select');
+  if(state.shotIndex === 0 && selEl){
+    selEl.addEventListener('change', maybeShowFairway);
+  }
+  state.shotIndex++;
+}
+
+export function clearInputs(){
+  ['par','distance','penalties'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  const fw = document.getElementById('fairway');
+  if(fw) fw.value = 'na';
+  const fairwayGroup = document.getElementById('fairway-group');
+  if (fairwayGroup) fairwayGroup.classList.add('hidden');
+  const container = document.getElementById('shots-container');
+  if(container) container.innerHTML = '';
+  state.shotIndex = 0;
+  addShotRow();
 }
