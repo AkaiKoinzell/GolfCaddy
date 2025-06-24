@@ -14,9 +14,19 @@ You can use any static server. A simple option with Python is:
 python3 -m http.server 8000
 ```
 
-Then navigate to `http://localhost:8000/home.html` in your browser.
+Then navigate to `http://localhost:8000/src/html/home.html` in your browser.
 
 The pages include [Bootstrap](https://getbootstrap.com/) from a CDN for modern styling.
+
+## Project structure
+
+```
+assets/        # images and icons
+src/
+  html/        # HTML pages
+  js/          # JavaScript modules
+styles.css     # shared stylesheet
+```
 
 ## Firebase configuration
 
@@ -38,36 +48,36 @@ export const firebaseConfig = {
 
 ## Running the app
 
-After starting a local server as described above, open `home.html` to log in with
+After starting a local server as described above, open `src/html/home.html` to log in with
 Google. Once authenticated you can navigate to the other pages using the
 navigation links.
 
 ## Main pages
 
-- **home.html** – landing page that handles Google authentication and provides
+- **src/html/home.html** – landing page that handles Google authentication and provides
   navigation to the rest of the app.
-- **index.html** – start a new round. Choose between manual score entry or
+- **src/html/index.html** – start a new round. Choose between manual score entry or
   "live" mode that calculates the hole score from the recorded shots and putts.
-- **stats.html** – view personal statistics or those of a friend using
+- **src/html/stats.html** – view personal statistics or those of a friend using
   `?uid=<id>`; shows handicap history and club statistics loaded from Firestore.
-- **clubs.html** – record individual club shots and see average distances for
+- **src/html/clubs.html** – record individual club shots and see average distances for
   each club.
-- **search.html** – search for other players by name or email and look up golf
+- **src/html/search.html** – search for other players by name or email and look up golf
   courses saved in Firestore.
-- **profile1.html** – manage your profile, clubs and your list of friends stored
+- **src/html/profile1.html** – manage your profile, clubs and your list of friends stored
   in Firestore.
-- **round.html** – display the details of a saved round.
-- **admin.html** – create or edit course definitions stored in Firestore.
+- **src/html/round.html** – display the details of a saved round.
+- **src/html/admin.html** – create or edit course definitions stored in Firestore.
 
 Course definitions are now stored in a Firestore collection and can be
-managed through **admin.html**.
+managed through **src/html/admin.html**.
 
 ## Navigation Bar
 
 The top navigation links are injected by `navbar.js`. Add the script tag below to any new page before your other JavaScript imports:
 
 ```html
-<script src="navbar.js"></script>
+<script src="../js/navbar.js"></script>
 ```
 
 This automatically inserts a Bootstrap styled navigation bar so you don't have to repeat the markup in each file.
