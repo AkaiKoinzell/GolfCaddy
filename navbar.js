@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
   adminLink.className = 'nav-link';
   adminLink.href = 'admin.html';
   adminLink.textContent = '🛠️ Admin';
-  onAuthStateChanged(auth, user => {
-    if (isAdmin(user)) {
+  onAuthStateChanged(auth, async user => {
+    if (await isAdmin(user)) {
       linksContainer.appendChild(adminLink);
     }
   });

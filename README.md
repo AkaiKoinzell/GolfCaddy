@@ -71,3 +71,12 @@ The top navigation links are injected by `navbar.js`. Add the script tag below t
 ```
 
 This automatically inserts a Bootstrap styled navigation bar so you don't have to repeat the markup in each file.
+
+## Admin Users
+
+Authorized administrators are stored in a Firestore collection called
+`adminUsers`. Each document's ID should be the email address of an admin user.
+If the collection does not exist yet, create it in the Firestore console and
+add a document with the email of any current admin (for example
+`l.m.devirgilio@gmail.com`). The application falls back to this email list if
+the collection cannot be read.
