@@ -8,7 +8,6 @@ const provider = new GoogleAuthProvider();
 const loginBtn = document.getElementById("login-btn");
 const logoutBtn = document.getElementById("logout-btn");
 const userInfo = document.getElementById("user-info");
-const navLinks = document.getElementById("nav-links");
 
 loginBtn.addEventListener("click", () => signInWithPopup(auth, provider));
 logoutBtn.addEventListener("click", () => signOut(auth));
@@ -21,7 +20,6 @@ onAuthStateChanged(auth, async (user) => {
     loginBtn.style.display = "none";
     logoutBtn.style.display = "inline";
     userInfo.style.display = "inline";
-    navLinks.style.display = "flex";
 
     const userRef = doc(db, "users", user.uid);
     const docSnap = await getDoc(userRef);
@@ -41,6 +39,5 @@ onAuthStateChanged(auth, async (user) => {
     loginBtn.style.display = "inline";
     logoutBtn.style.display = "none";
     userInfo.style.display = "none";
-    navLinks.style.display = "none";
   }
 });

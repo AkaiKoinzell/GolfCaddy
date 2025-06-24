@@ -6,13 +6,18 @@ document.addEventListener('DOMContentLoaded', () => {
   nav.innerHTML = `
     <div class="container-fluid">
       <a class="navbar-brand" href="home.html">Pro Putt</a>
-      <div class="navbar-nav">
-        <a class="nav-link" href="home.html">🏠 Home</a>
-        <a class="nav-link" href="index.html">➕ Round</a>
-        <a class="nav-link" href="stats.html">📊 Statistiche</a>
-        <a class="nav-link" href="search.html">🔍 Cerca</a>
-        <a class="nav-link" href="clubs.html">🏌️ Bastoni</a>
-        <a class="nav-link" href="profile1.html">👤 Profilo</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="navbar-nav">
+          <a class="nav-link" href="home.html">🏠 Home</a>
+          <a class="nav-link" href="index.html">➕ Round</a>
+          <a class="nav-link" href="stats.html">📊 Statistiche</a>
+          <a class="nav-link" href="search.html">🔍 Cerca</a>
+          <a class="nav-link" href="clubs.html">🏌️ Bastoni</a>
+          <a class="nav-link" href="profile1.html">👤 Profilo</a>
+        </div>
       </div>
     </div>
   `;

@@ -2,7 +2,7 @@
 
 :root {
     --primary-color: #006400;
-    --nav-bg: #e0e0e0;
+    --nav-bg: #ffffff;
     --accent-color: #4682B4;
     --background-color: #fff;
     --text-color: #333;
@@ -91,12 +91,6 @@ h2 {
     margin-bottom: 1rem;
 }
 
-.vertical-nav {
-    display: none;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 2rem;
-}
 
 .summary {
     margin-top: 2rem;
