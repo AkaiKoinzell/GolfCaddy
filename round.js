@@ -1,7 +1,7 @@
 if (!localStorage.getItem("uid")) window.location.href = "home.html";
 
 import { doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 
 function escapeHTML(text) {
   const div = document.createElement('div');

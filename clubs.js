@@ -10,7 +10,7 @@ import {
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 import { clubs as defaultClubs } from './clubList.js';
 import { loadClubs, getStoredClubs } from './userSettings.js';
 

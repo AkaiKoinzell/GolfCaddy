@@ -1,6 +1,6 @@
 // navbar.js - injects navigation bar into each page
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 import { isAdmin } from './roles.js';
 
 const { auth } = initFirebase();

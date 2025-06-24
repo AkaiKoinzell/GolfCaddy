@@ -9,7 +9,7 @@ import {
   query,
   where
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-import { initFirebase } from '../../firebase-config.js';
+import { initFirebase } from '../firebase-config.js';
 
 const { db } = initFirebase();
 

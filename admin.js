@@ -6,7 +6,7 @@ import {
   deleteDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 import { isAdmin } from './roles.js';
 
 const { auth, db } = initFirebase();

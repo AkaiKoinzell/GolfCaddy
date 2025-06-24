@@ -1,6 +1,6 @@
 import { collection, getDocs, query, where, setDoc, doc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 
 const { auth, db } = initFirebase();
 let currentUid = null;
