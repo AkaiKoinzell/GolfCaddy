@@ -38,9 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
   adminLink.className = 'nav-link';
   adminLink.href = 'admin.html';
   adminLink.textContent = '🛠️ Admin';
-  onAuthStateChanged(auth, async user => {
+onAuthStateChanged(auth, async user => {
     if (await isAdmin(user)) {
       linksContainer.appendChild(adminLink);
     }
   });
 });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js');
+  });
+}
