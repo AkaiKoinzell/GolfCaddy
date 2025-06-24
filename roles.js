@@ -1,6 +1,6 @@
 // roles.js - determine if a user is allowed to access admin features
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 
 // Fallback list of admin emails in case the Firestore collection is missing
 export const ADMIN_EMAILS = ['l.m.devirgilio@gmail.com'];

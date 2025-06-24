@@ -1,6 +1,6 @@
 import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 
 const { auth, db } = initFirebase();
 const provider = new GoogleAuthProvider();

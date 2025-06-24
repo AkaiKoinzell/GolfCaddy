@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 import { clubs as defaultClubs } from './clubList.js';
 
 const REQUIRED_CLUBS = ['Putter'];

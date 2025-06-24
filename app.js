@@ -12,7 +12,7 @@ import {
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { initFirebase, firebaseConfig } from './firebase-config.js';
+import { initFirebase, firebaseConfig } from './src/firebase-config.js';
 let courses = {};
 import { clubs as defaultClubs } from "./clubList.js";
 import { loadClubs, getStoredClubs } from "./userSettings.js";

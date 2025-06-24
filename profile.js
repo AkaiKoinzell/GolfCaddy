@@ -7,7 +7,7 @@ import {
   getDocs,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { initFirebase } from './firebase-config.js';
+import { initFirebase } from './src/firebase-config.js';
 import { loadClubs, saveClubs } from './userSettings.js';
 import { clubs as defaultClubs } from './clubList.js';
 
