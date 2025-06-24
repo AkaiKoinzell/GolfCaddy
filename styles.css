@@ -223,6 +223,19 @@ th, td {
     overflow-x: auto;
 }
 
+/* Horizontal layout for stats charts */
+.stats-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.stats-carousel > section,
+.stats-carousel > aside {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+}
+
 .mt-2 {
     margin-top: 2rem;
 }
