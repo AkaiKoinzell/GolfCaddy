@@ -1,0 +1,20 @@
+/* Admin page styles */
+.admin-page {
+    padding: 1rem;
+    background: #f5f5f5;
+}
+
+.admin-page form,
+#course-list {
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+}
+
+.admin-page button {
+    margin-top: 0.5rem;
+}
+
+li button {
+    margin-left: 0.5rem;
+}
+

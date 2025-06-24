@@ -1,0 +1,41 @@
+/* Clubs page styles */
+.clubs-page {
+    background: #f0f0f0;
+    padding: 2rem;
+}
+
+.clubs-page h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.form-section,
+.stats-section {
+    max-width: 600px;
+    margin: 2rem auto;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.club-stats {
+    margin-top: 1.5rem;
+}
+
+.club-stats div {
+    margin-bottom: 1rem;
+    background: #e6ffe6;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.club-stats h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary-color);
+}
+
+.club-stats p {
+    margin: 0.3rem 0;
+}
+
