@@ -3,7 +3,14 @@
   "version": "0.0.1",
   "description": "Pro Putt web application",
   "private": true,
+  "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 8000"
+    "start": "python3 -m http.server 8000",
+    "lint": "eslint .",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "jest": "^30.0.2"
   }
 }
