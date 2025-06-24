@@ -1,6 +1,6 @@
 const styleVars = getComputedStyle(document.documentElement);
 export const CHART_COLORS = {
-  distance: styleVars.getPropertyValue('--accent-color').trim() || '#4682B4',
+  distance: styleVars.getPropertyValue('--accent-color').trim() || '#0d6efd',
   putt: styleVars.getPropertyValue('--chart-putt-color').trim() || '#32CD32',
   bar18: styleVars.getPropertyValue('--chart-18-color').trim() || '#006400',
   bar9: styleVars.getPropertyValue('--chart-9-color').trim() || '#32CD32',

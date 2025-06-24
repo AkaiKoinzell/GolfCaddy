@@ -3,9 +3,9 @@
 :root {
     --primary-color: #006400;
     --nav-bg: #ffffff;
-    --accent-color: #4682B4;
+    --accent-color: #0d6efd;
     --background-color: #fff;
-    --text-color: #333;
+    --text-color: #212529;
     --chart-putt-color: #32CD32;
     --chart-18-color: #006400;
     --chart-9-color: #32CD32;
@@ -144,6 +144,13 @@ textarea {
     flex: 1;
 }
 
+@media (max-width: 600px) {
+    .shot-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 #hole-input {
     display: none;
 }
@@ -204,6 +211,12 @@ th, td {
 .filter-section {
     max-width: 800px;
     margin: 2rem auto;
+}
+
+@media (max-width: 600px) {
+    .filter-section {
+        margin: 1rem;
+    }
 }
 
 .scroll-x {
