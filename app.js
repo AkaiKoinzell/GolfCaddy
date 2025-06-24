@@ -1,21 +1,29 @@
-import {
-  collection,
-  addDoc,
-  setDoc,
-  getDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { collection, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { initFirebase, firebaseConfig } from './src/firebase-config.js';
-let courses = {};
 import { clubs as defaultClubs } from "./clubList.js";
 import { loadClubs, getStoredClubs } from "./userSettings.js";
+import {
+  loadFriends as fetchFriends,
+  populateFriendOptions,
+  addPlayerName,
+  addFriendPlayer,
+  searchPlayers
+} from './src/js/round/friends.js';
+import {
+  loadCourses as fetchCourses,
+  populateCourseOptions,
+  filterCourseOptions,
+  updateLayoutOptions,
+  updateComboOptions
+} from './src/js/round/courses.js';
+import {
+  saveDraft as storeDraft,
+  deleteDraft as removeDraft,
+  fetchDraft,
+  DRAFT_KEY
+} from './src/js/round/draft.js';
+let courses = {};
 
 
 
@@ -30,96 +38,35 @@ let shotIndex = 0;
 let selectedHoles = [];
 const roundData = [];
 let playersScores = [];
-const DRAFT_KEY = 'roundDraft';
 let clubs = getStoredClubs() || [...defaultClubs];
 let friendList = [];
 let currentPlayerIndex = 0;
 let holeData = [];
 
-async function loadFriends() {
-  if (!uid) return;
-  try {
-    const q = collection(db, 'users', uid, 'friends');
-    const snap = await getDocs(q);
-    friendList = await Promise.all(snap.docs.map(async d => {
-      let name = d.id;
-      try {
-        const s = await getDoc(doc(db, 'users', d.id));
-        if (s.exists()) name = s.data().name || d.id;
-      } catch (e) {
-        console.warn('Failed fetching friend name', e);
-      }
-      return { id: d.id, name };
-    }));
-    populateFriendOptions();
-  } catch (e) {
-    console.warn('Failed to load friends', e);
-  }
-}
-
-function populateFriendOptions() {
-  const list = document.getElementById('friend-options');
-  if (!list) return;
-  list.innerHTML = '';
-  friendList.forEach(f => {
-    const opt = document.createElement('option');
-    opt.value = f.name;
-    list.appendChild(opt);
-  });
-}
-
-function addPlayerName(name) {
-  const input = document.getElementById('players');
-  if (!input) return;
-  const current = input.value.split(',').map(n => n.trim()).filter(n => n);
-  if (!current.includes(name)) {
-    current.push(name);
-    input.value = current.join(', ');
-  }
-}
-
-window.addFriendPlayer = function () {
-  const input = document.getElementById('friend-select');
-  const name = input.value.trim();
-  if (name) {
-    addPlayerName(name);
-    input.value = '';
-  }
-};
-
-window.searchPlayers = async function () {
+// expose helper functions for inline handlers
+window.addFriendPlayer = addFriendPlayer;
+window.searchPlayers = async function(){
   const term = document.getElementById('player-search-input').value.trim();
   const list = document.getElementById('player-search-results');
   list.innerHTML = '';
-  if (!term) return;
-  let q;
-  if (term.includes('@')) {
-    q = query(collection(db, 'users'), where('email', '==', term));
-  } else {
-    q = query(collection(db, 'users'), where('name', '>=', term), where('name', '<=', term + '\uf8ff'));
-  }
-  const snap = await getDocs(q);
-  snap.forEach(d => {
-    const data = d.data();
+  const results = await searchPlayers(term);
+  results.forEach(r => {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
-    li.textContent = data.name || data.email || d.id;
+    li.textContent = r.label;
     const btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-success';
     btn.textContent = 'Aggiungi';
-    btn.onclick = () => addPlayerName(data.name || data.email || d.id);
+    btn.onclick = () => addPlayerName(r.label);
     li.appendChild(btn);
     list.appendChild(li);
   });
 };
+window.populateCourseOptions = () => populateCourseOptions(courses);
+window.filterCourseOptions = () => filterCourseOptions(courses);
+window.updateLayoutOptions = () => updateLayoutOptions(courses);
+window.updateComboOptions = () => updateComboOptions(courses);
 
-async function loadCourses() {
-  const snap = await getDocs(collection(db, 'courses'));
-  courses = {};
-  snap.forEach(docSnap => {
-    courses[docSnap.id] = docSnap.data();
-  });
-}
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -129,7 +76,8 @@ onAuthStateChanged(auth, async (user) => {
 
     clubs = await loadClubs(uid);
     document.querySelectorAll('.club-select').forEach(sel => populateClubSelect(sel));
-    await loadFriends();
+    friendList = await fetchFriends(uid);
+    populateFriendOptions(friendList);
 
     // Auto-riempi il campo giocatori se è vuoto
     const playersInput = document.getElementById("players");
@@ -139,38 +87,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-window.populateCourseOptions = function () {
-  const courseInput = document.getElementById("course");
-  const datalist = document.getElementById("course-options");
-  datalist.innerHTML = "";
-
-  Object.keys(courses).forEach(name => {
-    const option = document.createElement("option");
-    option.value = name;
-    datalist.appendChild(option);
-  });
-
-  courseInput.addEventListener("change", () => {
-    updateLayoutOptions();
-    updateComboOptions();
-  });
-};
-
-// Filter datalist options based on the current course input
-window.filterCourseOptions = function () {
-  const courseInput = document.getElementById("course");
-  const datalist = document.getElementById("course-options");
-  const filter = courseInput.value.toLowerCase();
-  datalist.innerHTML = "";
-
-  Object.keys(courses)
-    .filter(name => name.toLowerCase().includes(filter))
-    .forEach(name => {
-      const option = document.createElement("option");
-      option.value = name;
-      datalist.appendChild(option);
-    });
-};
 function updateHoleNumber() {
   document.getElementById("hole-number").textContent = currentHole;
 }
@@ -183,8 +99,8 @@ function autoFillHoleData() {
   }
 }
 
-async function saveDraft() {
-  const draft = {
+function buildDraft() {
+  return {
     meta: window._roundMeta,
     roundData,
     playersScores,
@@ -197,26 +113,8 @@ async function saveDraft() {
     uid,
     timestamp: new Date().toISOString()
   };
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-  if (uid) {
-    try {
-      await setDoc(doc(db, 'round_drafts', uid), draft);
-    } catch (e) {
-      console.warn('Unable to sync draft', e);
-    }
-  }
 }
 
-async function deleteDraft() {
-  localStorage.removeItem(DRAFT_KEY);
-  if (uid) {
-    try {
-      await deleteDoc(doc(db, 'round_drafts', uid));
-    } catch (e) {
-      console.warn('Unable to delete remote draft', e);
-    }
-  }
-}
 
 window.saveHole = async function () {
   const saveButton = document.querySelector("button[onclick='saveHole()']");
@@ -288,14 +186,14 @@ window.saveHole = async function () {
 
       localStorage.setItem("roundSaved", "true"); // flag per evitare duplicati
 
-      await deleteDraft();
+      await removeDraft(uid);
 
       alert("Round completato! I dati sono stati salvati online.");
       setTimeout(() => location.reload(), 1000); // delay per evitare race conditions
     } catch (error) {
       alert("Errore nel salvataggio su Firebase: " + error.message);
       saveButton.disabled = false; // riattiva in caso di errore
-      await saveDraft();
+      await storeDraft(uid, buildDraft());
     }
   } else {
     currentHole++;
@@ -305,7 +203,7 @@ window.saveHole = async function () {
     resetHoleData();
     loadCurrentPlayerData();
     saveButton.disabled = false; // riattiva per buche successive
-    await saveDraft();
+    await storeDraft(uid, buildDraft());
   }
 };
 
@@ -410,20 +308,8 @@ function resetHoleData(){
 
 
 async function checkForDraft() {
-  let draftStr = localStorage.getItem(DRAFT_KEY);
-  if (!draftStr && uid) {
-    try {
-      const snap = await getDoc(doc(db, 'round_drafts', uid));
-      if (snap.exists()) {
-        draftStr = JSON.stringify(snap.data());
-      }
-    } catch (e) {
-      console.warn('Unable to fetch remote draft', e);
-    }
-  }
-  if (!draftStr) return;
-  const draft = JSON.parse(draftStr);
-  if (!draft.roundData || !draft.meta) return;
+  const draft = await fetchDraft(uid);
+  if (!draft || !draft.roundData || !draft.meta) return;
 
   if (confirm('Riprendere il round incompleto?')) {
     window._roundMeta = draft.meta;
@@ -443,11 +329,11 @@ async function checkForDraft() {
       sel.value = String(currentPlayerIndex);
     }
     document.getElementById('course').value = draft.meta.course || '';
-    updateLayoutOptions();
+    updateLayoutOptions(courses);
     document.getElementById('layout').value = draft.meta.layout || '';
     document.getElementById('holes').value = String(draft.totalHoles);
     if (draft.meta.combo) {
-      updateComboOptions();
+      updateComboOptions(courses);
       document.getElementById('combo9').value = draft.meta.combo;
     }
     document.getElementById('notes').value = draft.notesValue || '';
@@ -458,22 +344,24 @@ async function checkForDraft() {
     autoFillHoleData();
     loadCurrentPlayerData();
   } else {
-    await deleteDraft();
+    await removeDraft(uid);
   }
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
-  await loadCourses();
+  courses = await fetchCourses();
   if (!uid) {
     const storedUid = localStorage.getItem('uid');
     if (storedUid) {
       uid = storedUid;
       clubs = await loadClubs(uid);
-      await loadFriends();
+      friendList = await fetchFriends(uid);
+      populateFriendOptions(friendList);
     }
   } else {
     clubs = await loadClubs(uid);
-    await loadFriends();
+    friendList = await fetchFriends(uid);
+    populateFriendOptions(friendList);
   }
   populateCourseOptions();
   shotIndex = document.querySelectorAll('#shots-container .shot-row').length;
@@ -487,10 +375,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   const fairwayGroup = document.getElementById('fairway-group');
   if (fairwayGroup) fairwayGroup.classList.add('hidden');
   document.getElementById("course").addEventListener("input", () => {
-    updateLayoutOptions();
-    updateComboOptions();
+    updateLayoutOptions(courses);
+    updateComboOptions(courses);
   });
-  document.getElementById("holes").addEventListener("change", updateComboOptions);
+  document.getElementById("holes").addEventListener("change", () => updateComboOptions(courses));
 
   const addBtn = document.getElementById('add-shot-btn');
   if(addBtn){
@@ -526,49 +414,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   localStorage.removeItem("roundSaved"); // reset all'avvio
   await checkForDraft();
 });
-window.updateLayoutOptions = function () {
-  const course = document.getElementById("course").value;
-  const layoutSelect = document.getElementById("layout");
-  layoutSelect.innerHTML = "";
-
-  if (courses[course]) {
-    const teeNames = Object.keys(courses[course].tees);
-    teeNames.forEach(tee => {
-      const option = document.createElement("option");
-      option.value = tee;
-      option.textContent = tee;
-      layoutSelect.appendChild(option);
-    });
-  }
-};
-
-window.updateComboOptions = function () {
-  const course = document.getElementById("course").value;
-  const holes = document.getElementById("holes").value;
-  const comboContainer = document.getElementById("combo-9-select");
-  const comboSelect = document.getElementById("combo9");
-  comboSelect.innerHTML = "";
-
-  if (holes === "9" && courses[course]?.combinations9) {
-    comboContainer.style.display = "block";
-    Object.entries(courses[course].combinations9).forEach(([label]) => {
-      const option = document.createElement("option");
-      option.value = label;
-      option.textContent = label;
-      comboSelect.appendChild(option);
-    });
-  } else if (holes === "18" && courses[course]?.combinations18) {
-    comboContainer.style.display = "block";
-    Object.entries(courses[course].combinations18).forEach(([label]) => {
-      const option = document.createElement("option");
-      option.value = label;
-      option.textContent = label;
-      comboSelect.appendChild(option);
-    });
-  } else {
-    comboContainer.style.display = "none";
-  }
-};
 
 window.startRound = function () {
   const holesSelect = document.getElementById("holes");
@@ -671,5 +516,5 @@ window.startRound = function () {
   updateHoleNumber();
   autoFillHoleData();
   loadCurrentPlayerData();
-  saveDraft();
+  storeDraft(uid, buildDraft());
 };
