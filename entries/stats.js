@@ -1,2 +1,2 @@
 import '../navbar.js';
-import '../stats.js';
+import '../src/js/stats/stats.js';

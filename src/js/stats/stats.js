@@ -3,8 +3,8 @@ if (!localStorage.getItem("uid")) {
 }
 
 import { collection, getDocs, query, where, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { initFirebase } from './src/firebase-config.js';
-import { calculateHandicap } from './handicap.js';
+import { initFirebase } from '../../firebase-config.js';
+import { calculateHandicap } from '../../../handicap.js';
 import { computeStrokesGained, aggregateClubStats, filterRounds, validHandicapRounds, computeScoreTrend, computeRoundStrokesGained } from './statsCalc.js';
 import * as Render from './statsRender.js';
 

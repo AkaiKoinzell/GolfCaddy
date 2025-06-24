@@ -1,4 +1,4 @@
-import { expectedStrokes, filterRounds, computeScoreTrend, computeRoundStrokesGained } from '../statsCalc.js';
+import { expectedStrokes, filterRounds, computeScoreTrend, computeRoundStrokesGained } from '../src/js/stats/statsCalc.js';
 
 describe('expectedStrokes', () => {
   test('returns base value for zero or negative distance', () => {
