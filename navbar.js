@@ -21,11 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
   `;
-  const header = document.querySelector('header');
-  if (header && header.nextSibling) {
-    header.parentNode.insertBefore(nav, header.nextSibling);
-  } else if (header) {
-    header.after(nav);
+  const header = document.querySelector('header.page-header');
+  if (header) {
+    header.before(nav);
   } else {
     document.body.prepend(nav);
   }
