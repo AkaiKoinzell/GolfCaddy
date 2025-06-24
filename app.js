@@ -363,7 +363,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     friendList = await fetchFriends(uid);
     populateFriendOptions(friendList);
   }
-  populateCourseOptions();
+  populateCourseOptions(courses);
   shotIndex = document.querySelectorAll('#shots-container .shot-row').length;
   if (shotIndex === 0) {
     addShotRow();
