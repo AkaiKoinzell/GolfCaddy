@@ -108,3 +108,15 @@ Create an optimized production build with:
 ```bash
 npm run build
 ```
+
+## Android App
+
+A basic Android project is available under the `android` folder. Open it with Android Studio or build from the command line. Copy your `google-services.json` file into `android/app` and run:
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+The Gradle scripts apply the Google services plugin and pull Firebase Analytics via the Firebase BoM.
+
